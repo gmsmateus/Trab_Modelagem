@@ -1,48 +1,48 @@
-/* BurguerFlow - Cores principais (so uma ideia) */
+/* ============================================================
+   BURGUERFLOW - TUDO PADRONIZADO
+   ============================================================ */
 
 :root {
-    --primaria: #ffc107;   /* Amarelo Burguer */
-    --secundaria: #d9534f; /* Vermelho Ketchup */
-    --fundo: #f8f9fa;      /* Cinza clarinho */
-    --texto-escuro: #212529;
+    --amarelo-burguer: #ffc107;   /* Cor principal (Garçom) */
+    --vermelho-ketchup: #d9534f;  /* Cor de alerta/ocupado */
+    --verde-alface: #28a745;      /* Cor de sucesso/pagamento */
+    --preto-chapa: #343a40;       /* Cor neutra/cozinha */
+    --fundo-cinza: #f8f9fa;
 }
 
 body {
-    background-color: var(--fundo);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--texto-escuro);
+    background-color: var(--fundo-cinza);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
-/* Títulos com cara de marca */
-h1, h2 {
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-    color: var(--texto-escuro);
+/* CARDS: Usados em todas as telas para agrupar informações */
+.card-sistema {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: 0.3s;
 }
 
-/* Customizando os botões */
+/* BOTÕES PERFILADOS: Efeito de 'subir' ao passar o mouse (hover) */
 .btn-perfil {
-    border-radius: 12px;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    border-radius: 10px;
     font-weight: bold;
     text-transform: uppercase;
+    transition: transform 0.2s;
 }
 
 .btn-perfil:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    transform: translateY(-3px); /* Faz o botão 'pular' levemente */
 }
 
-/* Cores específicas dos botões */
-.btn-garcom { background-color: var(--primaria); border-color: #e0a800; }
-.btn-cozinha { background-color: #343a40; color: white; }
-.btn-caixa { background-color: #28a745; color: white; }
+/* CLASSES DE CORES CUSTOMIZADAS: Facilitam o uso no HTML */
+.btn-amarelo { background-color: var(--amarelo-burguer); color: #000; }
+.btn-vermelho { background-color: var(--vermelho-ketchup); color: #fff; }
+.btn-verde { background-color: var(--verde-alface); color: #fff; }
+.btn-preto { background-color: var(--preto-chapa); color: #fff; }
 
-/* Cards (caixas) do sistema */
-.card-sistema {
-    border-radius: 15px;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+/* Ajuste fino para os títulos */
+h1, h2, h3 {
+    font-weight: 800;
+    color: #212529;
 }

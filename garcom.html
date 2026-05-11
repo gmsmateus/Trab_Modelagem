@@ -2,69 +2,59 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>BurguerFlow - Garçom</title>
+    <title>BurguerFlow - Atendimento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="estilo.css">
 </head>
-<body class="bg-light">
-
+<body>
     <div class="container py-4">
-        <div class="d-flex justify-content-between mb-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Área do Garçom</h2>
-            <a href="index.html" class="btn btn-outline-secondary">Sair</a>
+            <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair</a>
         </div>
 
-        <div class="card p-3 mb-4 shadow-sm card-sistema">
-            <h5 class="card-title">Selecione a Mesa</h5>
+        <div class="card card-sistema p-3 mb-4">
+            <h5 class="mb-3">Mapa de Mesas</h5>
             <div class="row g-2">
-                <div class="col-3"><button onclick="selecionarMesa('01', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">1</button></div>
-                <div class="col-3"><button onclick="selecionarMesa('02', 'Ocupada')" class="btn btn-danger w-100 py-3 btn-perfil">2</button></div>
-                <div class="col-3"><button onclick="selecionarMesa('03', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">3</button></div>
-                <div class="col-3"><button onclick="selecionarMesa('04', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">4</button></div>
+                <div class="col-3"><button onclick="verMesa('01', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">01</button></div>
+                <div class="col-3"><button onclick="verMesa('02', 'Ocupada')" class="btn btn-vermelho w-100 py-3 btn-perfil">02</button></div>
+                <div class="col-3"><button onclick="verMesa('03', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">03</button></div>
+                <div class="col-3"><button onclick="verMesa('04', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">04</button></div>
             </div>
         </div>
 
-        <div class="card p-3 shadow-sm card-sistema">
-            <h5 class="mb-3">Mesa Selecionada: <span id="numero-mesa" class="text-primary">--</span></h5>
-            <p><strong>Status:</strong> <span id="status-mesa">Selecione uma mesa acima</span></p>
+        <div id="detalhe-mesa" class="card card-sistema p-3 d-none">
             
+            <h5>Mesa <span id="num-mesa">--</span> <span id="status-badge" class="badge ms-2"></span></h5>
             <hr>
 
-            <h6>Resumo do Pedido:</h6>
-            <ul id="lista-pedido" class="list-group mb-3">
-                <li class="list-group-item text-muted text-center small">Nenhum item selecionado</li>
-            </ul>
+            <div id="itens-pedido" class="mb-3">
+                </div>
 
-            <button class="btn btn-perfil btn-garcom w-100 py-2 mb-2">
-                + Adicionar Pedido
-            </button>
-            
-            <button class="btn btn-success btn-perfil w-100 py-2">
-                Confirmar Tudo
-            </button>
+            <button id="btn-adicionar" class="btn btn-amarelo btn-perfil w-100 mb-2">+ Adicionar Item</button>
+            <button id="btn-confirmar" class="btn btn-verde btn-perfil w-100">Confirmar Pedido</button>
         </div>
+
     </div>
 
     <script>
-        function selecionarMesa(numero, status) {
-            // Atualiza o número da mesa na tela
-            document.getElementById('numero-mesa').innerText = numero;
-            document.getElementById('status-mesa').innerText = status;
-
-            const lista = document.getElementById('lista-pedido');
+        function verMesa(num, status) {
+            // 1. Mostra o bloco de detalhes removendo a classe 'd-none'
+            document.getElementById('detalhe-mesa').classList.remove('d-none');
             
-            // Simulação: Se a mesa estiver ocupada (vermelha), mostra um pedido pronto
-            if(status === 'Ocupada') {
-                lista.innerHTML = `
-                    <li class="list-group-item d-flex justify-content-between">1x X-Tudo <span>R$ 35,00</span></li>
-                    <li class="list-group-item d-flex justify-content-between">1x Coca-Cola <span>R$ 8,00</span></li>
-                `;
-            } else {
-                // Se estiver livre, mostra vazio para o garçom adicionar
-                lista.innerHTML = `<li class="list-group-item text-muted text-center small">Mesa vazia. Adicione itens abaixo.</li>`;
-            }
+            // 2. Atualiza o número e a cor do status
+            document.getElementById('num-mesa').innerText = num;
+            const badge = document.getElementById('status-badge');
+            badge.innerText = status;
+            badge.className = status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
+            
+            // 3. Simula a carga de itens (Mais pra frente, o JS buscará isso no JSON)
+            const itens = document.getElementById('itens-pedido');
+            itens.innerHTML = status === 'Ocupada' ? 
+                '<p>1x X-Burger Clássico<br><small>1x Coca-Cola 350ml</small></p>' : 
+                '<p class="text-muted">Mesa vazia. Aguardando novo pedido.</p>';
         }
     </script>
-
 </body>
 </html>
