@@ -1,5 +1,5 @@
 /* ============================================================
-   BURGUERFLOW - TUDO PADRONIZADO
+   BURGUERFLOW - PADRONIZAÇÃO VISUAL
    ============================================================ */
 
 :root {
@@ -8,41 +8,45 @@
     --verde-alface: #28a745;      /* Cor de sucesso/pagamento */
     --preto-chapa: #343a40;       /* Cor neutra/cozinha */
     --fundo-cinza: #f8f9fa;
+    --texto-escuro: #212529;
 }
 
 body {
     background-color: var(--fundo-cinza);
-    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--texto-escuro);
 }
 
-/* CARDS: Usados em todas as telas para agrupar informações */
+/* CARDS: Estilo padrão para as caixas do sistema */
 .card-sistema {
     border: none;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: 0.3s;
 }
 
-/* BOTÕES PERFILADOS: Efeito de 'subir' ao passar o mouse (hover) */
+/* BOTÕES: Efeito de 'pular' (hover) e arredondamento */
 .btn-perfil {
     border-radius: 10px;
     font-weight: bold;
     text-transform: uppercase;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .btn-perfil:hover {
-    transform: translateY(-3px); /* Faz o botão 'pular' levemente */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-/* CLASSES DE CORES CUSTOMIZADAS: Facilitam o uso no HTML */
-.btn-amarelo { background-color: var(--amarelo-burguer); color: #000; }
-.btn-vermelho { background-color: var(--vermelho-ketchup); color: #fff; }
-.btn-verde { background-color: var(--verde-alface); color: #fff; }
-.btn-preto { background-color: var(--preto-chapa); color: #fff; }
+/* CLASSES DE CORES CUSTOMIZADAS */
+.btn-amarelo { background-color: var(--amarelo-burguer); color: #000; border: none; }
+.btn-vermelho { background-color: var(--vermelho-ketchup); color: #fff; border: none; }
+.btn-verde { background-color: var(--verde-alface); color: #fff; border: none; }
+.btn-preto { background-color: var(--preto-chapa); color: #fff; border: none; }
 
-/* Ajuste fino para os títulos */
-h1, h2, h3 {
-    font-weight: 800;
-    color: #212529;
+/* FEEDBACK VISUAL NEUTRO: Destaque para a mesa selecionada */
+.mesa-selecionada {
+    border: 3px solid var(--texto-escuro) !important;
+    transform: scale(1.05);
 }
+
+h1, h2, h3 { font-weight: 800; letter-spacing: -1px; }

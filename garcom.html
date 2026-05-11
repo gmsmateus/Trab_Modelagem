@@ -17,43 +17,41 @@
         <div class="card card-sistema p-3 mb-4">
             <h5 class="mb-3">Mapa de Mesas</h5>
             <div class="row g-2">
-                <div class="col-3"><button onclick="verMesa('01', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">01</button></div>
-                <div class="col-3"><button onclick="verMesa('02', 'Ocupada')" class="btn btn-vermelho w-100 py-3 btn-perfil">02</button></div>
-                <div class="col-3"><button onclick="verMesa('03', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">03</button></div>
-                <div class="col-3"><button onclick="verMesa('04', 'Livre')" class="btn btn-outline-dark w-100 py-3 btn-perfil">04</button></div>
+                <div class="col-3"><button onclick="verMesa(this, '01', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">01</button></div>
+                <div class="col-3"><button onclick="verMesa(this, '02', 'Ocupada')" class="btn btn-mesa btn-vermelho w-100 py-3 btn-perfil">02</button></div>
+                <div class="col-3"><button onclick="verMesa(this, '03', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">03</button></div>
+                <div class="col-3"><button onclick="verMesa(this, '04', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">04</button></div>
             </div>
         </div>
 
         <div id="detalhe-mesa" class="card card-sistema p-3 d-none">
-            
             <h5>Mesa <span id="num-mesa">--</span> <span id="status-badge" class="badge ms-2"></span></h5>
             <hr>
-
             <div id="itens-pedido" class="mb-3">
                 </div>
-
-            <button id="btn-adicionar" class="btn btn-amarelo btn-perfil w-100 mb-2">+ Adicionar Item</button>
-            <button id="btn-confirmar" class="btn btn-verde btn-perfil w-100">Confirmar Pedido</button>
+            <button class="btn btn-amarelo btn-perfil w-100 mb-2">+ Adicionar Item</button>
+            <button class="btn btn-verde btn-perfil w-100">Confirmar Pedido</button>
         </div>
-
     </div>
 
     <script>
-        function verMesa(num, status) {
-            // 1. Mostra o bloco de detalhes removendo a classe 'd-none'
+        function verMesa(elemento, num, status) {
+            // FEEDBACK VISUAL: Remove destaque de todos e coloca no atual
+            document.querySelectorAll('.btn-mesa').forEach(btn => btn.classList.remove('mesa-selecionada'));
+            elemento.classList.add('mesa-selecionada');
+
+            // LÓGICA: Mostra o painel e atualiza textos
             document.getElementById('detalhe-mesa').classList.remove('d-none');
-            
-            // 2. Atualiza o número e a cor do status
             document.getElementById('num-mesa').innerText = num;
+            
             const badge = document.getElementById('status-badge');
             badge.innerText = status;
             badge.className = status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
             
-            // 3. Simula a carga de itens (Mais pra frente, o JS buscará isso no JSON)
             const itens = document.getElementById('itens-pedido');
             itens.innerHTML = status === 'Ocupada' ? 
                 '<p>1x X-Burger Clássico<br><small>1x Coca-Cola 350ml</small></p>' : 
-                '<p class="text-muted">Mesa vazia. Aguardando novo pedido.</p>';
+                '<p class="text-muted">Mesa vazia. Pronta para novo pedido.</p>';
         }
     </script>
 </body>

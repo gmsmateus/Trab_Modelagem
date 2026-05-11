@@ -7,59 +7,34 @@
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body class="bg-light">
-
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>💰 Painel do Caixa</h1>
+            <h1>💰 Fechamento</h1>
             <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair</a>
         </div>
 
-        <div class="card card-sistema shadow-sm">
-            <div class="card-body">
-                <h5 class="mb-4">Mesas em Aberto</h5>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Mesa</th>
-                                <th>Status</th>
-                                <th>Total Acumulado</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-caixa-corpo">
-                            <tr id="linha-mesa-01">
-                                <td>Mesa 01</td>
-                                <td><span class="badge bg-danger">Consumindo</span></td>
-                                <td class="fw-bold">R$ 29,00</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary btn-perfil">Detalhes</button>
-                                </td>
-                            </tr>
-                            
-                            <tr id="linha-mesa-02">
-                                <td>Mesa 02</td>
-                                <td><span class="badge bg-success">Aguardando Pagamento</span></td>
-                                <td class="fw-bold text-success">R$ 115,50</td>
-                                <td>
-                                    <button onclick="confirmarPagamento('02')" class="btn btn-sm btn-verde btn-perfil">Receber</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="card card-sistema p-3">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mesa</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-caixa">
+                        <tr>
+                            <td>Mesa 02</td>
+                            <td><span class="badge bg-success">Conta Pedida</span></td>
+                            <td class="fw-bold">R$ 43,00</td>
+                            <td><button class="btn btn-sm btn-verde btn-perfil">Receber</button></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <script>
-        function confirmarPagamento(mesa) {
-            if(confirm('Confirmar recebimento da Mesa ' + mesa + '?')) {
-                alert('Pagamento registrado! Mesa ' + mesa + ' agora está livre.');
-                // No futuro, aqui o JS enviará um comando para limpar o status da mesa no JSON
-            }
-        }
-    </script>
 </body>
 </html>
