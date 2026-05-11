@@ -1,0 +1,48 @@
+/* BurguerFlow - Cores principais (so uma ideia) */
+
+:root {
+    --primaria: #ffc107;   /* Amarelo Burguer */
+    --secundaria: #d9534f; /* Vermelho Ketchup */
+    --fundo: #f8f9fa;      /* Cinza clarinho */
+    --texto-escuro: #212529;
+}
+
+body {
+    background-color: var(--fundo);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--texto-escuro);
+}
+
+/* Títulos com cara de marca */
+h1, h2 {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    color: var(--texto-escuro);
+}
+
+/* Customizando os botões */
+.btn-perfil {
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.btn-perfil:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Cores específicas dos botões */
+.btn-garcom { background-color: var(--primaria); border-color: #e0a800; }
+.btn-cozinha { background-color: #343a40; color: white; }
+.btn-caixa { background-color: #28a745; color: white; }
+
+/* Cards (caixas) do sistema */
+.card-sistema {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
