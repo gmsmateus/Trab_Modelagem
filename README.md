@@ -29,7 +29,4 @@ Para fins de teste do protótipo, as configurações de administrador podem ser 
 
 ## 👥 Desenvolvedores
 - **Mateus Gomes**
-- [Nome da sua dupla]
-
----
-*DCC117 - UFJF | Trabalho de Modelagem de Sistemas*
+- **Savio Machado**
