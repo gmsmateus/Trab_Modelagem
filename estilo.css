@@ -3,10 +3,10 @@
    ============================================================ */
 
 :root {
-    --amarelo-burguer: #ffc107;   /* Cor principal (Garçom) */
-    --vermelho-ketchup: #d9534f;  /* Cor de alerta/ocupado */
-    --verde-alface: #28a745;      /* Cor de sucesso/pagamento */
-    --preto-chapa: #343a40;       /* Cor neutra/cozinha */
+    --amarelo-burguer: #ffc107;
+    --vermelho-ketchup: #d9534f;
+    --verde-alface: #28a745;
+    --preto-chapa: #343a40;
     --fundo-cinza: #f8f9fa;
     --texto-escuro: #212529;
 }
@@ -17,14 +17,13 @@ body {
     color: var(--texto-escuro);
 }
 
-/* CARDS: Estilo padrão para as caixas do sistema */
 .card-sistema {
     border: none;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background-color: #fff;
 }
 
-/* BOTÕES: Efeito de 'pular' (hover) e arredondamento */
 .btn-perfil {
     border-radius: 10px;
     font-weight: bold;
@@ -37,16 +36,23 @@ body {
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-/* CLASSES DE CORES CUSTOMIZADAS */
 .btn-amarelo { background-color: var(--amarelo-burguer); color: #000; border: none; }
 .btn-vermelho { background-color: var(--vermelho-ketchup); color: #fff; border: none; }
 .btn-verde { background-color: var(--verde-alface); color: #fff; border: none; }
 .btn-preto { background-color: var(--preto-chapa); color: #fff; border: none; }
 
-/* FEEDBACK VISUAL NEUTRO: Destaque para a mesa selecionada */
 .mesa-selecionada {
     border: 3px solid var(--texto-escuro) !important;
     transform: scale(1.05);
 }
 
 h1, h2, h3 { font-weight: 800; letter-spacing: -1px; }
+
+/* Ajuste para o botão de engrenagem */
+.btn-admin {
+    color: #6c757d;
+    transition: color 0.3s;
+}
+.btn-admin:hover {
+    color: var(--preto-chapa);
+}

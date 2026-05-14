@@ -2,39 +2,63 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BurguerFlow - Caixa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body class="bg-light">
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>💰 Fechamento</h1>
-            <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair</a>
+            <h1><i class="bi bi-cash-stack"></i> Painel do Caixa</h1>
+            <a href="index.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
         </div>
 
-        <div class="card card-sistema p-3">
+        <div class="card card-sistema shadow-sm p-4">
+            <h5 class="mb-4 text-muted">Contas Aguardando Pagamento</h5>
+            
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
                             <th>Mesa</th>
                             <th>Status</th>
-                            <th>Total</th>
-                            <th>Ação</th>
+                            <th>Total Acumulado</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tabela-caixa">
+                    <tbody>
                         <tr>
-                            <td>Mesa 02</td>
-                            <td><span class="badge bg-success">Conta Pedida</span></td>
-                            <td class="fw-bold">R$ 43,00</td>
-                            <td><button class="btn btn-sm btn-verde btn-perfil">Receber</button></td>
+                            <td><strong>Mesa 01</strong></td>
+                            <td><span class="badge bg-danger">Consumindo</span></td>
+                            <td class="fw-bold">R$ 29,00</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary btn-perfil px-3">Detalhes</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mesa 02</strong></td>
+                            <td><span class="badge bg-success">Aguardando Pagamento</span></td>
+                            <td class="fw-bold text-success fs-5">R$ 115,50</td>
+                            <td class="text-center">
+                                <button onclick="confirmarPagamento('02')" class="btn btn-sm btn-verde btn-perfil px-4">
+                                    <i class="bi bi-currency-dollar"></i> Receber
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <script>
+        function confirmarPagamento(mesa) {
+            if(confirm('Deseja confirmar o recebimento e liberar a Mesa ' + mesa + '?')) {
+                alert('Pagamento registrado com sucesso!');
+            }
+        }
+    </script>
 </body>
 </html>

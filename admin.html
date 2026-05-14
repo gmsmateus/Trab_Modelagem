@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurguerFlow - Administração</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body class="bg-light">
+
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-gear-wide-connected"></i> Painel Administrativo</h2>
+            <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair do Painel</a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-8">
+                <div class="card card-sistema p-4 shadow-sm">
+                    <h5 class="mb-4 text-primary"><i class="bi bi-list-stars"></i> Ajuste de Cardápio e Preços</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Categoria</th>
+                                    <th>Preço Atual (R$)</th>
+                                    <th class="text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>X-Burger Clássico</strong></td>
+                                    <td><span class="badge bg-secondary">Hambúrgueres</span></td>
+                                    <td><input type="text" class="form-control form-control-sm w-75" value="25.00"></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Coca-Cola 350ml</strong></td>
+                                    <td><span class="badge bg-info text-dark">Bebidas</span></td>
+                                    <td><input type="text" class="form-control form-control-sm w-75" value="7.00"></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Batata Frita M</strong></td>
+                                    <td><span class="badge bg-warning text-dark">Acompanhamentos</span></td>
+                                    <td><input type="text" class="form-control form-control-sm w-75" value="15.00"></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-sistema p-4 mb-4 shadow-sm">
+                    <h5 class="mb-4 text-primary"><i class="bi bi-shield-lock"></i> Segurança</h5>
+                    <button class="btn btn-outline-dark btn-perfil w-100 mb-3 text-start">
+                        <i class="bi bi-key me-2"></i> Alterar Senha Admin
+                    </button>
+                    <button class="btn btn-outline-dark btn-perfil w-100 text-start">
+                        <i class="bi bi-person-badge me-2"></i> Gerenciar Usuários
+                    </button>
+                </div>
+
+                <div class="card card-sistema p-4 shadow-sm">
+                    <h5 class="mb-4 text-primary"><i class="bi bi-graph-up"></i> Relatórios</h5>
+                    <button class="btn btn-outline-dark btn-perfil w-100 mb-3 text-start">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i> Vendas do Dia
+                    </button>
+                    <button class="btn btn-outline-danger btn-perfil w-100 text-start">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Resetar Pedidos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
