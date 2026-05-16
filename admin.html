@@ -20,22 +20,20 @@
             
             <div class="col-md-6">
                 <div class="card card-sistema p-4 shadow-sm h-100">
-                    <h4 class="mb-4 text-muted"><i class="bi bi-sliders"></i> Configurações do Sistema</h4>
+                    <h4 class="mb-4 text-muted"><i class="bi bi-sliders"></i> Configurações e Relatórios</h4>
                     
                     <div class="d-grid gap-3">
                         <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalCardapio">
                             <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio e Itens
                         </button>
                         
-                        <button class="btn btn-outline-danger btn-perfil text-start py-3" onclick="confirmarResetTurno()">
-                            <i class="bi bi-arrow-counterclockwise me-2"></i> Resetar Pedidos do Dia (Zerar Vendas)
+                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalSenha">
+                            <i class="bi bi-lock-key me-2 text-primary"></i> Alterar Senha do Perfil
                         </button>
-                    </div>
 
-                    <div class="mt-4 p-3 bg-light rounded border">
-                        <h6 class="fw-bold text-muted mb-2"><i class="bi bi-graph-up-arrow"></i> Resumo de Vendas do Turno</h6>
-                        <p class="mb-1">Pedidos Concluídos: <strong class="text-success">12</strong></p>
-                        <p class="mb-0">Faturamento Bruto Parcial: <strong class="text-success">R$ 412,50</strong></p>
+                        <button class="btn btn-verde btn-perfil text-start py-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalRelatorio">
+                            <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Gerar Relatório de Vendas (Filtro por Data)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -85,13 +83,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-3">Insira as informações básicas para adicionar um novo item ou lanche ao menu ativo do BurguerFlow.</p>
-                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nome do Item/Produto</label>
                         <input type="text" class="form-control" placeholder="Ex: X-Bacon Artesanal">
                     </div>
-                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Categoria</label>
                         <select class="form-select">
@@ -100,7 +95,6 @@
                             <option>Porções / Acompanhamentos</option>
                         </select>
                     </div>
-                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Preço de Venda Base</label>
                         <div class="input-group">
@@ -111,20 +105,94 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Novo item cadastrado com sucesso no banco de dados simulado!');" data-bs-dismiss="modal">Salvar e Publicar</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Novo item cadastrado!');" data-bs-dismiss="modal">Salvar e Publicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalSenha" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-lock-key text-primary"></i> Alterar Senha de Administrador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Senha Atual</label>
+                        <input type="password" class="form-control" placeholder="••••••••">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nova Senha</label>
+                        <input type="password" class="form-control" placeholder="Digite a nova senha">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Confirme a Nova Senha</label>
+                        <input type="password" class="form-control" placeholder="Repita a nova senha">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Senha administrativa alterada com sucesso!');" data-bs-dismiss="modal">Atualizar Perfil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRelatorio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-bar-graph text-success"></i> Relatório Consolidado de Vendas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2 mb-4 bg-light p-3 rounded border">
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Data Inicial</label>
+                            <input type="date" class="form-control form-control-sm" value="2026-05-16">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Data Final</label>
+                            <input type="date" class="form-control form-control-sm" value="2026-05-16">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-dark btn-sm w-100" onclick="alert('Filtro por data processado com sucesso!')"><i class="bi bi-filter"></i> Filtrar</button>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted mb-3">Resultados do Período Filtrado:</h6>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm table-bordered align-middle text-center">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Item Mais Vendido</th>
+                                    <th>Total de Pedidos</th>
+                                    <th>Faturamento Bruto</th>
+                                    <th>Ticket Médio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>X-Burger Clássico</strong></td>
+                                    <td>42 unidades</td>
+                                    <td class="text-success fw-bold">R$ 1.245,80</td>
+                                    <td>R$ 29,66</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small italic text-end mb-0">Relatório gerado automaticamente com base na persistência de data e hora do sistema.</p>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar Relatório</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="alert('Enviando documento para a fila de impressão...')"><i class="bi bi-printer"></i> Imprimir PDF</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        function confirmarResetTurno() {
-            if (confirm("ATENÇÃO: Deseja realmente resetar o histórico de pedidos e zerar as vendas do dia para o próximo turno? Esta ação limpará o monitor da cozinha e do caixa.")) {
-                alert("Turno resetado com sucesso! Todas as comandas e estatísticas foram zeradas para o novo período.");
-            }
-        }
-    </script>
 </body>
 </html>
