@@ -3,88 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BurguerFlow - Administração</title>
+    <title>BurguerFlow - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body class="bg-light">
-
     <div class="container py-4">
+        
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-gear-wide-connected"></i> Painel Administrativo</h2>
+            <h2><i class="bi bi-gear-fill"></i> Painel Administrativo</h2>
             <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair do Painel</a>
         </div>
 
         <div class="row g-4">
-            <div class="col-md-8">
-                <div class="card card-sistema p-4 shadow-sm">
-                    <h5 class="mb-4 text-primary"><i class="bi bi-list-stars"></i> Ajuste de Cardápio e Preços</h5>
+            
+            <div class="col-md-6">
+                <div class="card card-sistema p-4 shadow-sm h-100">
+                    <h4 class="mb-4 text-muted"><i class="bi bi-sliders"></i> Configurações do Sistema</h4>
                     
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Categoria</th>
-                                    <th>Preço Atual (R$)</th>
-                                    <th class="text-center">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>X-Burger Clássico</strong></td>
-                                    <td><span class="badge bg-secondary">Hambúrgueres</span></td>
-                                    <td><input type="text" class="form-control form-control-sm w-75" value="25.00"></td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Coca-Cola 350ml</strong></td>
-                                    <td><span class="badge bg-info text-dark">Bebidas</span></td>
-                                    <td><input type="text" class="form-control form-control-sm w-75" value="7.00"></td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Batata Frita M</strong></td>
-                                    <td><span class="badge bg-warning text-dark">Acompanhamentos</span></td>
-                                    <td><input type="text" class="form-control form-control-sm w-75" value="15.00"></td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm btn-verde btn-perfil px-3">Salvar</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalCardapio">
+                            <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio e Itens
+                        </button>
+                        
+                        <button class="btn btn-outline-danger btn-perfil text-start py-3" onclick="confirmarResetTurno()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i> Resetar Pedidos do Dia (Zerar Vendas)
+                        </button>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-muted mb-2"><i class="bi bi-graph-up-arrow"></i> Resumo de Vendas do Turno</h6>
+                        <p class="mb-1">Pedidos Concluídos: <strong class="text-success">12</strong></p>
+                        <p class="mb-0">Faturamento Bruto Parcial: <strong class="text-success">R$ 412,50</strong></p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="card card-sistema p-4 mb-4 shadow-sm">
-                    <h5 class="mb-4 text-primary"><i class="bi bi-shield-lock"></i> Segurança</h5>
-                    <button class="btn btn-outline-dark btn-perfil w-100 mb-3 text-start">
-                        <i class="bi bi-key me-2"></i> Alterar Senha Admin
-                    </button>
-                    <button class="btn btn-outline-dark btn-perfil w-100 text-start">
-                        <i class="bi bi-person-badge me-2"></i> Gerenciar Usuários
+            <div class="col-md-6">
+                <div class="card card-sistema p-4 shadow-sm h-100">
+                    <h4 class="mb-4 text-muted"><i class="bi bi-currency-dollar"></i> Alteração de Preços Rápida</h4>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">X-Burger Clássico</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" value="24.90">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">X-Salada Especial</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" value="26.90">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Batata Frita M</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" value="12.00">
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-verde btn-perfil w-100 py-2 mt-2" onclick="alert('Preços do cardápio global atualizados com sucesso!')">
+                        <i class="bi bi-check-lg"></i> Salvar Alterações de Preço
                     </button>
                 </div>
+            </div>
 
-                <div class="card card-sistema p-4 shadow-sm">
-                    <h5 class="mb-4 text-primary"><i class="bi bi-graph-up"></i> Relatórios</h5>
-                    <button class="btn btn-outline-dark btn-perfil w-100 mb-3 text-start">
-                        <i class="bi bi-file-earmark-bar-graph me-2"></i> Vendas do Dia
-                    </button>
-                    <button class="btn btn-outline-danger btn-perfil w-100 text-start">
-                        <i class="bi bi-exclamation-triangle me-2"></i> Resetar Pedidos
-                    </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCardapio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-egg-fried text-warning"></i> Ajustar Cardápio Interno</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Insira as informações básicas para adicionar um novo item ou lanche ao menu ativo do BurguerFlow.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nome do Item/Produto</label>
+                        <input type="text" class="form-control" placeholder="Ex: X-Bacon Artesanal">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Categoria</label>
+                        <select class="form-select">
+                            <option>Lanches</option>
+                            <option>Bebidas</option>
+                            <option>Porções / Acompanhamentos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Preço de Venda Base</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" placeholder="0,00">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Novo item cadastrado com sucesso no banco de dados simulado!');" data-bs-dismiss="modal">Salvar e Publicar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function confirmarResetTurno() {
+            if (confirm("ATENÇÃO: Deseja realmente resetar o histórico de pedidos e zerar as vendas do dia para o próximo turno? Esta ação limpará o monitor da cozinha e do caixa.")) {
+                alert("Turno resetado com sucesso! Todas as comandas e estatísticas foram zeradas para o novo período.");
+            }
+        }
+    </script>
 </body>
 </html>

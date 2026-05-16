@@ -27,54 +27,152 @@
         </div>
 
         <div id="detalhe-mesa" class="card card-sistema p-4 d-none shadow">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
                 <h5>Mesa <span id="num-mesa">--</span></h5>
                 <span id="status-badge" class="badge"></span>
             </div>
             <hr>
 
-            <div id="itens-pedido" class="mb-4">
-                <p class="text-muted small">Carregando detalhes do pedido...</p>
-            </div>
-
-            <div class="row g-2">
-                <div class="col-6">
-                    <button class="btn btn-amarelo btn-perfil w-100 py-2">
-                        <i class="bi bi-plus-lg"></i> Item
-                    </button>
+            <div id="conteudo-mesa-dinamico" class="mb-4">
                 </div>
-                <div class="col-6">
-                    <button class="btn btn-verde btn-perfil w-100 py-2">
-                        <i class="bi bi-check2-all"></i> Confirmar
-                    </button>
+
+            <div id="botoes-acao-mesa" class="row g-2">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="modalAdicionarItemLabel"><i class="bi bi-plus-circle-fill text-warning"></i> Adicionar Item ao Pedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Selecione o Produto</label>
+                        <select class="form-select">
+                            <option>X-Burger Clássico - R$ 24,90</option>
+                            <option>X-Salada Especial - R$ 26,90</option>
+                            <option>Batata Frita M - R$ 12,00</option>
+                            <option>Coca-Cola 350ml - R$ 6,00</option>
+                            <option>Suco Natural - R$ 8,00</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quantidade</label>
+                        <input type="number" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Observações de Preparo</label>
+                        <textarea class="form-control" rows="2" placeholder="Ex: Sem cebola, ponto ao ponto..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarInclusaoItem()" data-bs-dismiss="modal">Lançar Item</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
+        let mesaAtualSelecionada = "";
+
         function verMesa(elemento, num, status) {
-            // FEEDBACK VISUAL NEUTRO: Destaca a mesa selecionada
+            mesaAtualSelecionada = num;
+
+            // Destaca visualmente a mesa clicada (borda preta neutra)
             document.querySelectorAll('.btn-mesa').forEach(btn => btn.classList.remove('mesa-selecionada'));
             elemento.classList.add('mesa-selecionada');
 
-            // LÓGICA DE EXIBIÇÃO
+            // Torna o painel visível
             document.getElementById('detalhe-mesa').classList.remove('d-none');
             document.getElementById('num-mesa').innerText = num;
             
+            // Configura o Badge de Status
             const badge = document.getElementById('status-badge');
             badge.innerText = status;
             badge.className = status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
             
-            const itens = document.getElementById('itens-pedido');
-            itens.innerHTML = status === 'Ocupada' ? 
-                '<div class="alert alert-light border-0 p-0">' +
-                '<strong>1x X-Burger Clássico</strong><br>' +
-                '<small class="text-muted">Obs: Sem cebola.</small><br>' +
-                '<strong>1x Coca-Cola 350ml</strong>' +
-                '</div>' : 
-                '<p class="text-muted italic">Mesa disponível para abertura de pedido.</p>';
+            const conteudo = document.getElementById('conteudo-mesa-dinamico');
+            const botoes = document.getElementById('botoes-acao-mesa');
+
+            // Trata as telas dependendo do estado real da mesa
+            if (status === 'Livre') {
+                conteudo.innerHTML = `<p class="text-muted italic">Esta mesa encontra-se vazia e disponível no momento.</p>`;
+                botoes.innerHTML = `
+                    <div class="col-12">
+                        <button onclick="abrirMesaAtiva()" class="btn btn-verde btn-perfil w-100 py-2">
+                            <i class="bi bi-door-open"></i> Abrir Mesa (Ocupar)
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Estado Ocupada: mostra os itens com ações de Check e Cancelar por item
+                conteudo.innerHTML = `
+                    <h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6>
+                    <div class="list-group gap-2">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
+                            <div>
+                                <span class="badge bg-warning text-dark me-2">Em preparo</span>
+                                <strong>1x X-Burger Clássico</strong><br>
+                                <small class="text-muted">Obs: Sem cebola.</small>
+                            </div>
+                            <div class="btn-group">
+                                <button onclick="marcarItemEntregue('X-Burger')" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>
+                                <button onclick="removerItemComanda('X-Burger')" class="btn btn-sm btn-outline-danger" title="Remover item/Pedido errado"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
+                            <div>
+                                <span class="badge bg-success me-2">Entregue</span>
+                                <strong>1x Coca-Cola 350ml</strong>
+                            </div>
+                            <div class="btn-group">
+                                <button onclick="removerItemComanda('Coca-Cola')" class="btn btn-sm btn-outline-danger" title="Remover item/Pedido errado"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                botoes.innerHTML = `
+                    <div class="col-6">
+                        <button class="btn btn-amarelo btn-perfil w-100 py-2" data-bs-toggle="modal" data-bs-target="#modalAdicionarItem">
+                            <i class="bi bi-plus-lg"></i> Adicionar Item
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button onclick="alert('Lançamentos da mesa salvos e sincronizados!')" class="btn btn-outline-dark btn-perfil w-100 py-2">
+                            <i class="bi bi-check2-all"></i> Confirmar Tudo
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function abrirMesaAtiva() {
+            alert(`Mesa ${mesaAtualSelecionada} foi aberta com sucesso! Agora você pode adicionar produtos.`);
+            // Simula a mudança de estado imediata na tela para teste
+            document.getElementById('status-badge').innerText = 'Ocupada';
+            document.getElementById('status-badge').className = 'badge bg-danger';
+            verMesa(document.querySelector('.mesa-selecionada'), mesaAtualSelecionada, 'Ocupada');
+        }
+
+        function confirmarInclusaoItem() {
+            alert('Item adicionado temporariamente à comanda! Clique em Confirmar Tudo para salvar.');
+        }
+
+        function marcarItemEntregue(nomeItem) {
+            alert(`Status do item "${nomeItem}" atualizado para: Entregue na mesa!`);
+        }
+
+        function removerItemComanda(nomeItem) {
+            if(confirm(`Deseja realmente remover "${nomeItem}" desta comanda devido a erro de lançamento?`)) {
+                alert(`O item "${nomeItem}" foi removido com sucesso.`);
+            }
         }
     </script>
 </body>
-</html>
+</html>     

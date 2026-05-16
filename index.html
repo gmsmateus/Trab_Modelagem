@@ -11,9 +11,9 @@
 <body class="d-flex align-items-center vh-100">
 
     <div class="position-absolute top-0 end-0 p-4">
-        <button onclick="acessoAdmin()" class="btn btn-admin fs-3" title="Configurações do Sistema">
+        <a href="admin.html" class="btn btn-admin fs-3" title="Configurações do Sistema">
             <i class="bi bi-gear-fill"></i>
-        </button>
+        </a>
     </div>
 
     <div class="container text-center">
@@ -46,19 +46,6 @@
             <small>DCC117 - Trabalho de Modelagem de Sistemas</small>
         </footer>
     </div>
-
-    <script>
-        function acessoAdmin() {
-            // Prompt simples para simular segurança no protótipo
-            const senha = prompt("Acesso Restrito. Digite a senha do Administrador:");
-            
-            if (senha === "1234") {
-                window.location.href = "admin.html";
-            } else if (senha !== null) {
-                alert("Senha incorreta! Acesso negado.");
-            }
-        }
-    </script>
 
 </body>
 </html>
