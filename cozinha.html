@@ -31,7 +31,7 @@
                             <p class="small text-muted mb-3 italic">Obs: Sem cebola, carne mal passada.</p>
                             <p class="mb-1"><strong>1x Batata Frita M</strong></p>
                         </div>
-                        <button onclick="finalizarPedidoCozinha('pedido-m02', 'Mesa 02')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
+                        <button onclick="solicitarConclusaoCozinha('pedido-m02', 'Mesa 02')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
                             <i class="bi bi-check-circle"></i> Marcar como Pronto
                         </button>
                     </div>
@@ -51,7 +51,7 @@
                             <p class="small text-muted mb-3 italic">Obs: Um deles sem tomate.</p>
                             <p class="mb-1"><strong>1x Coca-Cola 2L</strong></p>
                         </div>
-                        <button onclick="finalizarPedidoCozinha('pedido-m04', 'Mesa 04')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
+                        <button onclick="solicitarConclusaoCozinha('pedido-m04', 'Mesa 04')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
                             <i class="bi bi-check-circle"></i> Marcar como Pronto
                         </button>
                     </div>
@@ -71,7 +71,7 @@
                             <p class="small text-muted mb-3 italic">Obs: Adicionar maionese caseira extra.</p>
                             <p class="mb-1"><strong>1x Suco Natural de Laranja</strong></p>
                         </div>
-                        <button onclick="finalizarPedidoCozinha('pedido-m01', 'Mesa 01')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
+                        <button onclick="solicitarConclusaoCozinha('pedido-m01', 'Mesa 01')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
                             <i class="bi bi-check-circle"></i> Marcar como Pronto
                         </button>
                     </div>
@@ -91,7 +91,7 @@
                             <p class="small text-muted mb-3 italic">Obs: Bem crocantes.</p>
                             <p class="mb-1"><strong>2x Cerveja Artesanal</strong></p>
                         </div>
-                        <button onclick="finalizarPedidoCozinha('pedido-m03', 'Mesa 03')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
+                        <button onclick="solicitarConclusaoCozinha('pedido-m03', 'Mesa 03')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
                             <i class="bi bi-check-circle"></i> Marcar como Pronto
                         </button>
                     </div>
@@ -101,19 +101,72 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalConfirmarCozinha" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content card-sistema">
+                <div class="modal-body text-center pt-4">
+                    <i class="bi bi-question-circle-fill text-success fs-1 mb-3 d-block"></i>
+                    <p class="mb-4">Deseja marcar o pedido da <strong id="nome-mesa-cozinha">--</strong> como pronto e enviar para expedição?</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Não</button>
+                        <button type="button" class="btn btn-sm btn-success px-3" id="btnConfirmarPronto">Sim, Pronto</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        <div id="toastCozinha" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-check2-circle text-success"></i>
+                    <span id="toastCozinhaMensagem">Pedido pronto!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        function finalizarPedidoCozinha(idElemento, nomeMesa) {
-            if(confirm(`Deseja marcar o pedido da ${nomeMesa} como PRONTO e enviar para a expedição?`)) {
-                const card = document.getElementById(idElemento);
-                // Dá um efeito visual sumindo com o card para simular a saída da fila
+        let idElementoAtual = "";
+        let nomeMesaAtual = "";
+
+        function exibirToastCozinha(mensagem) {
+            document.getElementById('toastCozinhaMensagem').innerText = mensagem;
+            const toastEl = document.getElementById('toastCozinha');
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        }
+
+        function solicitarConclusaoCozinha(idElemento, nomeMesa) {
+            idElementoAtual = idElemento;
+            nomeMesaAtual = nomeMesa;
+            document.getElementById('nome-mesa-cozinha').innerText = nomeMesa;
+            
+            const modalEl = document.getElementById('modalConfirmarCozinha');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        document.getElementById('btnConfirmarPronto').addEventListener('click', function() {
+            const modalEl = document.getElementById('modalConfirmarCozinha');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            const card = document.getElementById(idElementoAtual);
+            if (card) {
                 card.style.transition = 'all 0.4s ease';
                 card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
                 setTimeout(() => {
                     card.remove();
-                    alert(`Pedido da ${nomeMesa} finalizado com sucesso!`);
+                    exibirToastCozinha(`Pedido da ${nomeMesaAtual} finalizado com sucesso!`);
                 }, 400);
             }
-        }
+        });
     </script>
 </body>
 </html>

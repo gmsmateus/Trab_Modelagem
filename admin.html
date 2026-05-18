@@ -66,7 +66,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-verde btn-perfil w-100 py-2 mt-2" onclick="alert('Preços do cardápio global atualizados com sucesso!')">
+                    <button class="btn btn-verde btn-perfil w-100 py-2 mt-2" onclick="salvarPrecosRapidos()">
                         <i class="bi bi-check-lg"></i> Salvar Alterações de Preço
                     </button>
                 </div>
@@ -105,7 +105,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Novo item cadastrado!');" data-bs-dismiss="modal">Salvar e Publicar</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="salvarItemCardapio()" data-bs-dismiss="modal">Salvar e Publicar</button>
                 </div>
             </div>
         </div>
@@ -134,7 +134,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="alert('Senha administrativa alterada com sucesso!');" data-bs-dismiss="modal">Atualizar Perfil</button>
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="atualizarSenhaAdmin()" data-bs-dismiss="modal">Atualizar Perfil</button>
                 </div>
             </div>
         </div>
@@ -158,7 +158,7 @@
                             <input type="date" class="form-control form-control-sm" value="2026-05-16">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-dark btn-sm w-100" onclick="alert('Filtro por data processado com sucesso!')"><i class="bi bi-filter"></i> Filtrar</button>
+                            <button class="btn btn-dark btn-sm w-100" onclick="filtrarRelatorioData()"><i class="bi bi-filter"></i> Filtrar</button>
                         </div>
                     </div>
 
@@ -187,12 +187,59 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar Relatório</button>
-                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="alert('Enviando documento para a fila de impressão...')"><i class="bi bi-printer"></i> Imprimir PDF</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="imprimirRelatorioPDF()"><i class="bi bi-printer"></i> Imprimir PDF</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        <div id="toastAdmin" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i id="toastAdminIcone" class="bi bi-check-circle-fill text-success"></i>
+                    <span id="toastAdminMensagem">Operação realizada com sucesso!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para acionar os toasts modernos
+        function exibirToastAdmin(mensagem, iconeClass = "bi-check-circle-fill text-success") {
+            const iconeEl = document.getElementById('toastAdminIcone');
+            iconeEl.className = `bi ${iconeClass}`;
+            
+            document.getElementById('toastAdminMensagem').innerText = mensagem;
+            
+            const toastEl = document.getElementById('toastAdmin');
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        }
+
+        // Substitutos das funções com alert() nativo
+        function salvarPrecosRapidos() {
+            exibirToastAdmin("Preços do cardápio global atualizados com sucesso!");
+        }
+
+        function salvarItemCardapio() {
+            exibirToastAdmin("Novo item cadastrado e publicado no cardápio!", "bi-plus-circle-fill text-warning");
+        }
+
+        function atualizarSenhaAdmin() {
+            exibirToastAdmin("Senha administrativa alterada com sucesso!", "bi-shield-check text-primary");
+        }
+
+        function filtrarRelatorioData() {
+            exibirToastAdmin("Filtro de período processado e tabela atualizada!", "bi-funnel-fill text-info");
+        }
+
+        function imprimirRelatorioPDF() {
+            exibirToastAdmin("Gerando documento... Enviado para a fila de impressão.", "bi-printer-fill text-light");
+        }
+    </script>
 </body>
 </html>

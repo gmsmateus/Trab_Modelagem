@@ -48,7 +48,7 @@
                                 <button onclick="abrirDetalhesMesa('02', 'R$ 30,90', '1x X-Burger Clássico (R$ 24,90)<br>1x Coca-Cola 350ml (R$ 6,00)')" class="btn btn-sm btn-outline-primary btn-perfil px-3 me-1">
                                     <i class="bi bi-eye"></i> Detalhes
                                 </button>
-                                <button onclick="confirmarPagamento('02')" class="btn btn-sm btn-verde btn-perfil px-3">
+                                <button onclick="solicitarBaixaPagamento('02', 'R$ 30,90')" class="btn btn-sm btn-verde btn-perfil px-3">
                                     <i class="bi bi-currency-dollar"></i> Receber
                                 </button>
                             </td>
@@ -88,8 +88,7 @@
                 </div>
                 <div class="modal-body">
                     <h6 class="text-muted small mb-2">Produtos Consumidos:</h6>
-                    <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3">
-                        </div>
+                    <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3"></div>
                     <div class="d-flex justify-content-between align-items-center border-top pt-2">
                         <span class="fw-bold">VALOR TOTAL:</span>
                         <span id="modal-total-mesa" class="fs-4 fw-bold text-success">R$ 0,00</span>
@@ -97,40 +96,102 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarPagamentoDoModal()" data-bs-dismiss="modal">
-                        <i class="bi bi-currency-dollar"></i> Dar Baixa e Liberar
+                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarPagamentoDoModal()">
+                        <i class="bi bi-currency-dollar"></i> Processar Baixa
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="modalProcessarPagamento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h6 class="modal-title fw-bold text-center w-100"><i class="bi bi-credit-card-2-back text-success"></i> Confirmar Recebimento</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2 text-center">
+                    <p class="mb-3">Deseja dar baixa na <strong>Mesa <span id="confirm-num-mesa">--</span></strong> no valor de <strong id="confirm-total-mesa" class="text-success">--</strong>?</p>
+                    <div class="mb-3 text-start">
+                        <label class="form-label small text-muted mb-1">Forma de Pagamento:</label>
+                        <select class="form-select form-select-sm" id="formaPagamento">
+                            <option value="Dinheiro">💵 Dinheiro</option>
+                            <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                            <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                            <option value="Pix">📱 Pix</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-success px-3" id="btnConfirmarBaixaEfetiva">Finalizar e Liberar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        <div id="toastCaixa" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span id="toastCaixaMensagem">Pagamento efetuado!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let modalCaixa;
+        let modalDetalhes;
+        let modalPagamento;
         let mesaSelecionadaCaixa = "";
+        let totalSelecionadoCaixa = "";
 
         document.addEventListener("DOMContentLoaded", function() {
-            modalCaixa = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
+            modalDetalhes = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
+            modalPagamento = new bootstrap.Modal(document.getElementById('modalProcessarPagamento'));
         });
+
+        function exibirToastCaixa(mensagem) {
+            document.getElementById('toastCaixaMensagem').innerText = mensagem;
+            const toastEl = document.getElementById('toastCaixa');
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        }
 
         function abrirDetalhesMesa(mesa, total, listaItens) {
             mesaSelecionadaCaixa = mesa;
+            totalSelecionadoCaixa = total;
             document.getElementById('modal-num-mesa').innerText = mesa;
             document.getElementById('modal-total-mesa').innerText = total;
             document.getElementById('modal-lista-produtos').innerHTML = listaItens;
-            modalCaixa.show();
+            modalDetalhes.show();
         }
 
-        function confirmarPagamento(mesa) {
-            if(confirm('Deseja confirmar o recebimento e liberar a Mesa ' + mesa + '?')) {
-                alert('Pagamento registrado com sucesso! Mesa liberada para o atendimento.');
-            }
+        function solicitarBaixaPagamento(mesa, total) {
+            mesaSelecionadaCaixa = mesa;
+            totalSelecionadoCaixa = total;
+            document.getElementById('confirm-num-mesa').innerText = mesa;
+            document.getElementById('confirm-total-mesa').innerText = total;
+            modalPagamento.show();
         }
 
         function confirmarPagamentoDoModal() {
-            confirmarPagamento(mesaSelecionadaCaixa);
+            // Fecha o primeiro de forma limpa antes de chamar o próximo para evitar bugs visuais
+            modalDetalhes.hide();
+            setTimeout(() => {
+                solicitarBaixaPagamento(mesaSelecionadaCaixa, totalSelecionadoCaixa);
+            }, 300);
         }
+
+        document.getElementById('btnConfirmarBaixaEfetiva').addEventListener('click', function() {
+            modalPagamento.hide();
+            const forma = document.getElementById('formaPagamento').value;
+            exibirToastCaixa(`Pagamento da Mesa ${mesaSelecionadaCaixa} recebido via ${forma}! Comanda encerrada.`);
+        });
     </script>
 </body>
 </html>
