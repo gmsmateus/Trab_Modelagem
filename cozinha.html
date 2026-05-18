@@ -13,7 +13,7 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-fire"></i> Monitor da Cozinha (Fila de Preparo)</h2>
-            <a href="index.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
+            <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
         </div>
 
         <div class="row g-3 px-1" style="max-height: 75vh; overflow-y: auto;">
@@ -22,18 +22,23 @@
                 <div class="card card-sistema h-100 shadow-sm border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                         <strong class="fs-5">Mesa 02</strong>
-                        <span class="badge bg-warning text-dark fw-bold">Pendente</span>
+                        <span id="badge-m02" class="badge bg-warning text-dark fw-bold">Pendente</span>
                     </div>
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
                             <p class="mb-1"><strong>1x X-Burger Clássico</strong></p>
-                            <p class="small text-muted mb-3 italic">Obs: Sem cebola, carne mal passada.</p>
+                            <p class="small text-muted mb-3 fst-italic">Obs: Sem cebola, carne mal passada.</p>
                             <p class="mb-1"><strong>1x Batata Frita M</strong></p>
                         </div>
-                        <button onclick="solicitarConclusaoCozinha('pedido-m02', 'Mesa 02')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
-                            <i class="bi bi-check-circle"></i> Marcar como Pronto
-                        </button>
+                        <div class="d-flex gap-2 mt-4">
+                            <button id="btn-ini-m02" onclick="iniciarPreparo('m02')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
+                                <i class="bi bi-play-fill"></i> Iniciar
+                            </button>
+                            <button id="btn-pronto-m02" onclick="solicitarConclusaoCozinha('pedido-m02', 'Mesa 02')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
+                                <i class="bi bi-check-circle"></i> Pronto
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -42,18 +47,23 @@
                 <div class="card card-sistema h-100 shadow-sm border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                         <strong class="fs-5">Mesa 04</strong>
-                        <span class="badge bg-warning text-dark fw-bold">Pendente</span>
+                        <span id="badge-m04" class="badge bg-warning text-dark fw-bold">Pendente</span>
                     </div>
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
                             <p class="mb-1"><strong>2x X-Salada Especial</strong></p>
-                            <p class="small text-muted mb-3 italic">Obs: Um deles sem tomate.</p>
+                            <p class="small text-muted mb-3 fst-italic">Obs: Um deles sem tomate.</p>
                             <p class="mb-1"><strong>1x Coca-Cola 2L</strong></p>
                         </div>
-                        <button onclick="solicitarConclusaoCozinha('pedido-m04', 'Mesa 04')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
-                            <i class="bi bi-check-circle"></i> Marcar como Pronto
-                        </button>
+                        <div class="d-flex gap-2 mt-4">
+                            <button id="btn-ini-m04" onclick="iniciarPreparo('m04')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
+                                <i class="bi bi-play-fill"></i> Iniciar
+                            </button>
+                            <button id="btn-pronto-m04" onclick="solicitarConclusaoCozinha('pedido-m04', 'Mesa 04')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
+                                <i class="bi bi-check-circle"></i> Pronto
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,18 +72,23 @@
                 <div class="card card-sistema h-100 shadow-sm border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                         <strong class="fs-5">Mesa 01</strong>
-                        <span class="badge bg-warning text-dark fw-bold">Pendente</span>
+                        <span id="badge-m01" class="badge bg-warning text-dark fw-bold">Pendente</span>
                     </div>
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
                             <p class="mb-1"><strong>1x Combo Burguer Duplo</strong></p>
-                            <p class="small text-muted mb-3 italic">Obs: Adicionar maionese caseira extra.</p>
+                            <p class="small text-muted mb-3 fst-italic">Obs: Adicionar maionese caseira extra.</p>
                             <p class="mb-1"><strong>1x Suco Natural de Laranja</strong></p>
                         </div>
-                        <button onclick="solicitarConclusaoCozinha('pedido-m01', 'Mesa 01')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
-                            <i class="bi bi-check-circle"></i> Marcar como Pronto
-                        </button>
+                        <div class="d-flex gap-2 mt-4">
+                            <button id="btn-ini-m01" onclick="iniciarPreparo('m01')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
+                                <i class="bi bi-play-fill"></i> Iniciar
+                            </button>
+                            <button id="btn-pronto-m01" onclick="solicitarConclusaoCozinha('pedido-m01', 'Mesa 01')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
+                                <i class="bi bi-check-circle"></i> Pronto
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -82,18 +97,23 @@
                 <div class="card card-sistema h-100 shadow-sm border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                         <strong class="fs-5">Mesa 03</strong>
-                        <span class="badge bg-warning text-dark fw-bold">Pendente</span>
+                        <span id="badge-m03" class="badge bg-warning text-dark fw-bold">Pendente</span>
                     </div>
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
                             <p class="mb-1"><strong>1x Porção de Anéis de Cebola</strong></p>
-                            <p class="small text-muted mb-3 italic">Obs: Bem crocantes.</p>
+                            <p class="small text-muted mb-3 fst-italic">Obs: Bem crocantes.</p>
                             <p class="mb-1"><strong>2x Cerveja Artesanal</strong></p>
                         </div>
-                        <button onclick="solicitarConclusaoCozinha('pedido-m03', 'Mesa 03')" class="btn btn-verde btn-perfil w-100 mt-4 py-2">
-                            <i class="bi bi-check-circle"></i> Marcar como Pronto
-                        </button>
+                        <div class="d-flex gap-2 mt-4">
+                            <button id="btn-ini-m03" onclick="iniciarPreparo('m03')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
+                                <i class="bi bi-play-fill"></i> Iniciar
+                            </button>
+                            <button id="btn-pronto-m03" onclick="solicitarConclusaoCozinha('pedido-m03', 'Mesa 03')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
+                                <i class="bi bi-check-circle"></i> Pronto
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -135,10 +155,21 @@
         let nomeMesaAtual = "";
 
         function exibirToastCozinha(mensagem) {
-            document.getElementById('toastCozinhaMensagem').innerText = mensagem;
+            document.getElementById('toastCozinhaMensagem').innerText = message = mensagem;
             const toastEl = document.getElementById('toastCozinha');
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
             toast.show();
+        }
+
+        function iniciarPreparo(idMesa) {
+            const badge = document.getElementById(`badge-${idMesa}`);
+            badge.innerText = "Em Preparo";
+            badge.className = "badge bg-primary text-white fw-bold";
+            
+            document.getElementById(`btn-ini-${idMesa}`).disabled = true;
+            document.getElementById(`btn-pronto-${idMesa}`).disabled = false;
+            
+            exibirToastCozinha(`Preparo iniciado para a ${idMesa.toUpperCase()}!`);
         }
 
         function solicitarConclusaoCozinha(idElemento, nomeMesa) {

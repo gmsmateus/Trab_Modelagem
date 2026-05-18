@@ -13,7 +13,7 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-journal-text"></i> Gestão de Atendimento</h2>
-            <a href="index.html" class="btn btn-outline-secondary btn-sm">Voltar ao Início</a>
+            <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar ao Início</a>
         </div>
 
         <div class="card card-sistema p-3 mb-4 shadow-sm">
@@ -51,7 +51,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Selecione o Produto</label>
-                        <select class="form-select">
+                        <select class="form-select" id="selectProduto">
                             <option>X-Burger Clássico - R$ 24,90</option>
                             <option>X-Salada Especial - R$ 26,90</option>
                             <option>Batata Frita M - R$ 12,00</option>
@@ -129,7 +129,7 @@
             const botoes = document.getElementById('botoes-acao-mesa');
 
             if (status === 'Livre') {
-                conteudo.innerHTML = `<p class="text-muted italic">Esta mesa encontra-se vazia e disponível no momento.</p>`;
+                conteudo.innerHTML = `<p class="text-muted fst-italic">Esta mesa encontra-se vazia e disponível no momento.</p>`;
                 botoes.innerHTML = `
                     <div class="col-12">
                         <button onclick="abrirMesaAtiva()" class="btn btn-verde btn-perfil w-100 py-2">
@@ -138,7 +138,6 @@
                     </div>
                 `;
             } else {
-                // REGRA DO DIAGRAMA APLICADA NA INJEÇÃO DA MESA 02:
                 conteudo.innerHTML = `
                     <h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6>
                     <div class="list-group gap-2">
@@ -182,9 +181,18 @@
 
         function abrirMesaAtiva() {
             exibirToast(`Mesa ${mesaAtualSelecionada} aberta com sucesso! Lançamentos liberados.`);
-            document.getElementById('status-badge').innerText = 'Ocupada';
-            document.getElementById('status-badge').className = 'badge bg-danger';
-            verMesa(document.querySelector('.mesa-selecionada'), mesaAtualSelecionada, 'Ocupada');
+            
+            const botaoMesaNoMapa = document.querySelector('.mesa-selecionada');
+            if (botaoMesaNoMapa) {
+                // Altera dinamicamente as classes do botão no topo para vermelho (Ocupada)
+                botaoMesaNoMapa.classList.remove('btn-outline-dark');
+                botaoMesaNoMapa.classList.add('btn-vermelho');
+                // Atualiza o atributo onclick para que a mesa continue abrindo como ocupada nos próximos cliques
+                botaoMesaNoMapa.setAttribute('onclick', `verMesa(this, '${mesaAtualSelecionada}', 'Ocupada')`);
+            }
+            
+            // Recarrega os detalhes da mesa agora com o status correto
+            verMesa(botaoMesaNoMapa, mesaAtualSelecionada, 'Ocupada');
         }
 
         function confirmarInclusaoItem() {

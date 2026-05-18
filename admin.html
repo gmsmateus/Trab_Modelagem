@@ -13,7 +13,7 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-gear-fill"></i> Painel Administrativo</h2>
-            <a href="index.html" class="btn btn-outline-secondary btn-sm">Sair do Painel</a>
+            <a href="dashboard.html" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Sair do Panel</a>
         </div>
 
         <div class="row g-4">
@@ -39,36 +39,49 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card card-sistema p-4 shadow-sm h-100">
-                    <h4 class="mb-4 text-muted"><i class="bi bi-currency-dollar"></i> Alteração de Preços Rápida</h4>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">X-Burger Clássico</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input type="text" class="form-control" value="24.90">
+                <div class="card card-sistema p-4 shadow-sm h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h4 class="mb-4 text-muted"><i class="bi bi-currency-dollar"></i> Alteração de Preços Rápida</h4>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">X-Burger Clássico</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="24.90">
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">X-Salada Especial</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input type="text" class="form-control" value="26.90">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">X-Salada Especial</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="26.90">
+                            </div>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Batata Frita M</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="12.00">
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-verde btn-perfil w-100 py-2 mt-2 mb-4" onclick="salvarPrecosRapidos()">
+                            <i class="bi bi-check-lg"></i> Salvar Alterações de Preço
+                        </button>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Batata Frita M</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input type="text" class="form-control" value="12.00">
+                    <div class="border-top pt-3">
+                        <h4 class="mb-3 text-muted fs-5"><i class="bi bi-shield-exclamation"></i> Segurança do Sistema</h4>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Nova Senha Master do Sistema</label>
+                            <input type="password" id="novaSenhaMaster" class="form-control form-control-sm" placeholder="Digite a nova senha master">
                         </div>
+                        <button class="btn btn-dark btn-sm w-100 py-2" onclick="salvarNovaSenhaMaster()">
+                            <i class="bi bi-key-fill text-warning"></i> Atualizar Senha do Sistema
+                        </button>
                     </div>
-                    
-                    <button class="btn btn-verde btn-perfil w-100 py-2 mt-2" onclick="salvarPrecosRapidos()">
-                        <i class="bi bi-check-lg"></i> Salvar Alterações de Preço
-                    </button>
                 </div>
             </div>
 
@@ -99,7 +112,7 @@
                         <label class="form-label fw-bold">Preço de Venda Base</label>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
-                            <input type="text" class="form-control" placeholder="0,00">
+                            <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
                         </div>
                     </div>
                 </div>
@@ -151,11 +164,11 @@
                     <div class="row g-2 mb-4 bg-light p-3 rounded border">
                         <div class="col-md-5">
                             <label class="form-label small fw-bold">Data Inicial</label>
-                            <input type="date" class="form-control form-control-sm" value="2026-05-16">
+                            <input type="date" class="form-control form-control-sm" value="2026-05-18">
                         </div>
                         <div class="col-md-5">
                             <label class="form-label small fw-bold">Data Final</label>
-                            <input type="date" class="form-control form-control-sm" value="2026-05-16">
+                            <input type="date" class="form-control form-control-sm" value="2026-05-18">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button class="btn btn-dark btn-sm w-100" onclick="filtrarRelatorioData()"><i class="bi bi-filter"></i> Filtrar</button>
@@ -183,7 +196,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <p class="text-muted small italic text-end mb-0">Relatório gerado automaticamente com base na persistência de data e hora do sistema.</p>
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar Relatório</button>
@@ -206,13 +218,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
-        // Função para acionar os toasts modernos
         function exibirToastAdmin(mensagem, iconeClass = "bi-check-circle-fill text-success") {
             const iconeEl = document.getElementById('toastAdminIcone');
             iconeEl.className = `bi ${iconeClass}`;
-            
             document.getElementById('toastAdminMensagem').innerText = mensagem;
             
             const toastEl = document.getElementById('toastAdmin');
@@ -220,9 +229,18 @@
             toast.show();
         }
 
-        // Substitutos das funções com alert() nativo
         function salvarPrecosRapidos() {
             exibirToastAdmin("Preços do cardápio global atualizados com sucesso!");
+        }
+
+        function salvarNovaSenhaMaster() {
+            const novaSenha = document.getElementById('novaSenhaMaster').value;
+            if (novaSenha.trim() !== "") {
+                exibirToastAdmin("Senha Master do sistema redefinida! (Qualquer credencial continuará aceita para testes)", "bi-shield-check text-warning");
+                document.getElementById('novaSenhaMaster').value = "";
+            } else {
+                exibirToastAdmin("Digite uma senha válida antes de salvar.", "bi-exclamation-triangle-fill text-danger");
+            }
         }
 
         function salvarItemCardapio() {
