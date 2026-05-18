@@ -105,7 +105,6 @@
         let mesaAtualSelecionada = "";
         let itemParaRemoverAtual = "";
 
-        // Função moderna que substitui os alert() tradicionais
         function exibirToast(mensagem) {
             document.getElementById('toastMensagem').innerText = mensagem;
             const toastElement = document.getElementById('toastSistema');
@@ -139,26 +138,28 @@
                     </div>
                 `;
             } else {
+                // REGRA DO DIAGRAMA APLICADA NA INJEÇÃO DA MESA 02:
                 conteudo.innerHTML = `
                     <h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6>
                     <div class="list-group gap-2">
+                        
                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
                             <div>
-                                <span class="badge bg-warning text-dark me-2">Em preparo</span>
-                                <strong>1x X-Burger Clássico</strong><br>
+                                <span class="badge bg-success me-2"><i class="bi bi-check2-all"></i> Entregue</span>
+                                <strong class="text-decoration-underline text-dark">1x X-Burger Clássico</strong><br>
                                 <small class="text-muted">Obs: Sem cebola.</small>
                             </div>
                             <div class="btn-group">
-                                <button onclick="marcarItemEntregue('X-Burger')" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>
-                                <button onclick="solicitarRemocaoItem('X-Burger')" class="btn btn-sm btn-outline-danger" title="Remover item/Pedido errado"><i class="bi bi-x-lg"></i></button>
-                            </div>
+                                </div>
                         </div>
+
                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
                             <div>
-                                <span class="badge bg-success me-2">Entregue</span>
+                                <span class="badge bg-warning text-dark me-2">Em preparo</span>
                                 <strong>1x Coca-Cola 350ml</strong>
                             </div>
                             <div class="btn-group">
+                                <button onclick="marcarItemEntregue('Coca-Cola')" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>
                                 <button onclick="solicitarRemocaoItem('Coca-Cola')" class="btn btn-sm btn-outline-danger" title="Remover item/Pedido errado"><i class="bi bi-x-lg"></i></button>
                             </div>
                         </div>
@@ -194,7 +195,6 @@
             exibirToast(`Status de "${nomeItem}" alterado para: Entregue!`);
         }
 
-        // Nova lógica que dispara o modal sofisticado do Bootstrap
         function solicitarRemocaoItem(nomeItem) {
             itemParaRemoverAtual = nomeItem;
             document.getElementById('nome-item-remover').innerText = `"${nomeItem}"`;
@@ -204,7 +204,6 @@
             modal.show();
         }
 
-        // Vincula a ação de confirmação real dentro do modal moderno
         document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
             const modalElement = document.getElementById('modalConfirmarRemocao');
             const modal = bootstrap.Modal.getInstance(modalElement);
