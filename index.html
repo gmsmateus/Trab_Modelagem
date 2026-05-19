@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BurguerFlow - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link class="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
@@ -13,23 +13,15 @@
     <div class="card card-sistema shadow p-4" style="max-width: 400px; width: 100%;">
         <div class="text-center mb-4">
             <h1 class="fw-bold text-dark"><i class="bi bi-burger text-warning"></i> BurguerFlow</h1>
-            <p class="text-muted small">Insira suas credenciais para acessar o sistema</p>
+            <p class="text-muted small">Clique em entrar para acessar o sistema (senha opcional)</p>
         </div>
 
         <form id="formLogin">
-            <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Usuário / Matrícula</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
-                    <input type="text" class="form-control" id="usuario" placeholder="Ex: admin, garcom1" autofocus required>
-                </div>
-            </div>
-            
             <div class="mb-4">
                 <label class="form-label small fw-bold text-muted">Senha de Acesso</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
-                    <input type="password" class="form-control" id="senha" placeholder="••••••••" required>
+                    <input type="password" class="form-control" id="senha" placeholder="••••••••" autofocus>
                 </div>
             </div>
 
@@ -42,7 +34,7 @@
     <script>
         document.getElementById('formLogin').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Aceita qualquer coisa digitada e redireciona para o menu
+            // Redireciona direto para o dashboard, com ou sem digitação
             window.location.href = "dashboard.html";
         });
     </script>
