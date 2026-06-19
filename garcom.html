@@ -19,10 +19,6 @@
         <div class="card card-sistema p-3 mb-4 shadow-sm">
             <h5 class="mb-3 text-muted">Selecione uma Mesa:</h5>
             <div class="row g-2" id="mapa-mesas">
-                <div class="col-3"><button onclick="verMesa(this, '01', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">01</button></div>
-                <div class="col-3"><button onclick="verMesa(this, '02', 'Ocupada')" class="btn btn-mesa btn-vermelho w-100 py-3 btn-perfil">02</button></div>
-                <div class="col-3"><button onclick="verMesa(this, '03', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">03</button></div>
-                <div class="col-3"><button onclick="verMesa(this, '04', 'Livre')" class="btn btn-mesa btn-outline-dark w-100 py-3 btn-perfil">04</button></div>
             </div>
         </div>
 
@@ -52,11 +48,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Selecione o Produto</label>
                         <select class="form-select" id="selectProduto">
-                            <option>X-Burger Clássico - R$ 24,90</option>
-                            <option>X-Salada Especial - R$ 26,90</option>
-                            <option>Batata Frita M - R$ 12,00</option>
-                            <option>Coca-Cola 350ml - R$ 6,00</option>
-                            <option>Suco Natural - R$ 8,00</option>
+                            <!-- Carregado Dinamicamente via JS -->
                         </select>
                     </div>
                     <div class="mb-3">
@@ -103,32 +95,105 @@
     
     <script>
         let mesaAtualSelecionada = "";
-        let itemParaRemoverAtual = "";
+        let itemIndexParaRemover = null;
+
+        // --- MODELO DO BANCO DE DADOS (LOCALSTORAGE) ---
+        if (!localStorage.getItem('burguerflow_mesas')) {
+            const estruturaInicial = {
+                "01": { status: "Livre", itens: [] },
+                "02": { status: "Livre", itens: [] },
+                "03": { status: "Livre", itens: [] },
+                "04": { status: "Livre", itens: [] }
+            };
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(estruturaInicial));
+        }
+
+        function obterDadosMesas() {
+            return JSON.parse(localStorage.getItem('burguerflow_mesas'));
+        }
+
+        function salvarDadosMesas(dados) {
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+            renderizarMapaMesas(); 
+            if (mesaAtualSelecionada) {
+                atualizarPainelDetalhes(mesaAtualSelecionada);
+            }
+        }
 
         function exibirToast(mensagem) {
-            document.getElementById('toastMensagem').innerText = mensagem;
+            document.getElementById('toastMensagem').innerText = message = mensagem;
             const toastElement = document.getElementById('toastSistema');
             const toast = new bootstrap.Toast(toastElement, { delay: 3500 });
             toast.show();
         }
 
-        function verMesa(elemento, num, status) {
+        // --- CARREGAR CARDÁPIO DINÂMICO ---
+        function carregarProdutosNoSelect() {
+            const cardapio = JSON.parse(localStorage.getItem('burguerflow_cardapio')) || [
+                "X-Burger Clássico - R$ 24,90",
+                "X-Salada Especial - R$ 26,90",
+                "Batata Frita M - R$ 12,00",
+                "Coca-Cola 350ml - R$ 6,00",
+                "Suco Natural - R$ 8,00"
+            ];
+
+            const select = document.getElementById('selectProduto');
+            if (select) {
+                select.innerHTML = "";
+                cardapio.forEach(item => {
+                    select.innerHTML += `<option>${item}</option>`;
+                });
+            }
+        }
+
+        // --- RENDERIZAR O MAPA DE MESAS DINAMICAMENTE ---
+        function renderizarMapaMesas() {
+            const dados = obterDadosMesas();
+            const mapaContainer = document.getElementById('mapa-mesas');
+            mapaContainer.innerHTML = ""; 
+
+            Object.keys(dados).forEach(numMesa => {
+                const mesa = dados[numMesa];
+                const classeBotao = mesa.status === 'Livre' ? 'btn-outline-dark' : 'btn-vermelho';
+                const classeSelecao = (numMesa === mesaAtualSelecionada) ? 'mesa-selecionada' : '';
+
+                mapaContainer.innerHTML += `
+                    <div class="col-3">
+                        <button onclick="verMesa('${numMesa}')" id="btn-mesa-${numMesa}" class="btn btn-mesa ${classeBotao} ${classeSelecao} w-100 py-3 btn-perfil">
+                            ${numMesa}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- SELECIONAR UMA MESA ---
+        function verMesa(num) {
             mesaAtualSelecionada = num;
 
             document.querySelectorAll('.btn-mesa').forEach(btn => btn.classList.remove('mesa-selecionada'));
-            elemento.classList.add('mesa-selecionada');
+            const btnAtual = document.getElementById(`btn-mesa-${num}`);
+            if (btnAtual) btnAtual.classList.add('mesa-selecionada');
+
+            atualizarPainelDetalhes(num);
+        }
+
+        // --- ATUALIZAR CONTEÚDO DOS DETALHES ---
+        function atualizarPainelDetalhes(num) {
+            const dados = obterDadosMesas();
+            const mesa = dados[num];
 
             document.getElementById('detalhe-mesa').classList.remove('d-none');
             document.getElementById('num-mesa').innerText = num;
             
             const badge = document.getElementById('status-badge');
-            badge.innerText = status;
-            badge.className = status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
+            badge.innerText = mesa.status;
+            badge.className = mesa.status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
             
             const conteudo = document.getElementById('conteudo-mesa-dinamico');
             const botoes = document.getElementById('botoes-acao-mesa');
 
-            if (status === 'Livre') {
+            if (mesa.status === 'Livre') {
                 conteudo.innerHTML = `<p class="text-muted fst-italic">Esta mesa encontra-se vazia e disponível no momento.</p>`;
                 botoes.innerHTML = `
                     <div class="col-12">
@@ -138,32 +203,49 @@
                     </div>
                 `;
             } else {
-                conteudo.innerHTML = `
-                    <h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6>
-                    <div class="list-group gap-2">
-                        
-                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
-                            <div>
-                                <span class="badge bg-success me-2"><i class="bi bi-check2-all"></i> Entregue</span>
-                                <strong class="text-decoration-underline text-dark">1x X-Burger Clássico</strong><br>
-                                <small class="text-muted">Obs: Sem cebola.</small>
-                            </div>
-                            <div class="btn-group">
-                                </div>
-                        </div>
+                if (mesa.itens.length === 0) {
+                    conteudo.innerHTML = `<p class="text-muted fst-italic">Nenhum item lançado nesta comanda ainda.</p>`;
+                } else {
+                    let itensHTML = `<h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6><div class="list-group gap-2">`;
+                    
+                    mesa.itens.forEach((item, index) => {
+                        let badgeStatus = "";
+                        let textDecoration = "text-dark";
+                        let botaoEntregue = "";
 
-                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
-                            <div>
-                                <span class="badge bg-warning text-dark me-2">Em preparo</span>
-                                <strong>1x Coca-Cola 350ml</strong>
+                        if (item.status === "Rascunho") {
+                            badgeStatus = `<span class="badge bg-secondary me-2"><i class="bi bi-clock"></i> A enviar</span>`;
+                        } else if (item.status === "Pendente") {
+                            badgeStatus = `<span class="badge bg-warning text-dark me-2">Na fila da cozinha</span>`;
+                        } else if (item.status === "Em preparo") {
+                            badgeStatus = `<span class="badge bg-primary me-2">Em preparo</span>`;
+                            botaoEntregue = `<button onclick="marcarItemEntregue(${index})" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>`;
+                        } else if (item.status === "Entregue") {
+                            badgeStatus = `<span class="badge bg-success me-2"><i class="bi bi-check2-all"></i> Entregue</span>`;
+                            textDecoration = 'text-decoration-underline text-muted';
+                        }
+                        
+                        const obsHTML = item.obs ? `<br><small class="text-muted">Obs: ${item.obs}</small>` : '';
+
+                        itensHTML += `
+                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
+                                <div>
+                                    ${badgeStatus}
+                                    <strong class="${textDecoration}">1x ${item.produto}</strong>
+                                    ${obsHTML}
+                                </div>
+                                <div class="btn-group">
+                                    ${botaoEntregue}
+                                    <button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Remover item"><i class="bi bi-x-lg"></i></button>
+                                </div>
                             </div>
-                            <div class="btn-group">
-                                <button onclick="marcarItemEntregue('Coca-Cola')" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>
-                                <button onclick="solicitarRemocaoItem('Coca-Cola')" class="btn btn-sm btn-outline-danger" title="Remover item/Pedido errado"><i class="bi bi-x-lg"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                        `;
+                    });
+
+                    itensHTML += `</div>`;
+                    conteudo.innerHTML = itensHTML;
+                }
+
                 botoes.innerHTML = `
                     <div class="col-6">
                         <button class="btn btn-amarelo btn-perfil w-100 py-2" data-bs-toggle="modal" data-bs-target="#modalAdicionarItem">
@@ -171,53 +253,123 @@
                         </button>
                     </div>
                     <div class="col-6">
-                        <button onclick="exibirToast('Lançamentos da mesa salvos e sincronizados!')" class="btn btn-outline-dark btn-perfil w-100 py-2">
-                            <i class="bi bi-check2-all"></i> Confirmar Tudo
+                        <button onclick="enviarPedidoParaCozinha()" class="btn btn-verde btn-perfil w-100 py-2">
+                            <i class="bi bi-send-fill"></i> Enviar Pedido
                         </button>
                     </div>
                 `;
             }
         }
 
+        // --- ABRIR UMA MESA ---
         function abrirMesaAtiva() {
+            const dados = obterDadosMesas();
+            dados[mesaAtualSelecionada].status = "Ocupada";
+            dados[mesaAtualSelecionada].itens = []; 
+            
+            salvarDadosMesas(dados);
             exibirToast(`Mesa ${mesaAtualSelecionada} aberta com sucesso! Lançamentos liberados.`);
-            
-            const botaoMesaNoMapa = document.querySelector('.mesa-selecionada');
-            if (botaoMesaNoMapa) {
-                // Altera dinamicamente as classes do botão no topo para vermelho (Ocupada)
-                botaoMesaNoMapa.classList.remove('btn-outline-dark');
-                botaoMesaNoMapa.classList.add('btn-vermelho');
-                // Atualiza o atributo onclick para que a mesa continue abrindo como ocupada nos próximos cliques
-                botaoMesaNoMapa.setAttribute('onclick', `verMesa(this, '${mesaAtualSelecionada}', 'Ocupada')`);
-            }
-            
-            // Recarrega os detalhes da mesa agora com o status correto
-            verMesa(botaoMesaNoMapa, mesaAtualSelecionada, 'Ocupada');
         }
 
+        // --- LANÇAR NOVO ITEM DO MODAL (SALVA COMO RASCUNHO) ---
         function confirmarInclusaoItem() {
-            exibirToast('Uma unidade adicionada temporariamente! Confirme as alterações para salvar.');
+            const select = document.getElementById('selectProduto');
+            const produtoSelecionado = select.options[select.selectedIndex].text;
+            const txtObs = document.querySelector('#modalAdicionarItem textarea');
+            const obs = txtObs ? txtObs.value.trim() : "";
+
+            if (!mesaAtualSelecionada) return;
+
+            const dados = obterDadosMesas();
+            
+            const novoItem = {
+                produto: produtoSelecionado,
+                status: "Rascunho",
+                obs: obs
+            };
+
+            dados[mesaAtualSelecionada].itens.push(novoItem);
+            salvarDadosMesas(dados);
+            
+            exibirToast(`"${produtoSelecionado}" adicionado à lista! Não se esqueça de Enviar o Pedido.`);
+            if(txtObs) txtObs.value = "";
         }
 
-        function marcarItemEntregue(nomeItem) {
-            exibirToast(`Status de "${nomeItem}" alterado para: Entregue!`);
+        // --- DISPARA OS ITENS DO RASCUNHO PARA A COZINHA ---
+        function enviarPedidoParaCozinha() {
+            if (!mesaAtualSelecionada) return;
+            const dados = obterDadosMesas();
+            
+            let enviouAlgo = false;
+            dados[mesaAtualSelecionada].itens.forEach(item => {
+                if (item.status === "Rascunho") {
+                    item.status = "Pendente";
+                    enviouAlgo = true;
+                }
+            });
+
+            if (enviouAlgo) {
+                salvarDadosMesas(dados);
+                exibirToast("Pedido enviado com sucesso para a cozinha! 🍔🔥");
+            } else {
+                exibirToast("Não há novos itens para enviar.");
+            }
         }
 
-        function solicitarRemocaoItem(nomeItem) {
-            itemParaRemoverAtual = nomeItem;
+        // --- MUDAR STATUS DO ITEM PARA ENTREGUE ---
+        function marcarItemEntregue(index) {
+            const dados = obterDadosMesas();
+            const item = dados[mesaAtualSelecionada].itens[index];
+            item.status = "Entregue";
+            
+            salvarDadosMesas(dados);
+            exibirToast(`Status de "${item.produto}" alterado para: Entregue!`);
+        }
+
+        // --- ABRIR MODAL DE CONFIRMAÇÃO DE REMOÇÃO ---
+        function solicitarRemocaoItem(index, nomeItem) {
+            itemIndexParaRemover = index;
             document.getElementById('nome-item-remover').innerText = `"${nomeItem}"`;
             
             const modalElement = document.getElementById('modalConfirmarRemocao');
             const modal = new bootstrap.Modal(modalElement);
             modal.show();
-        }
+        }   
 
+        // --- CONFIRMAR EXCLUSÃO DENTRO DO MODAL ---
         document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
-            const modalElement = document.getElementById('modalConfirmarRemocao');
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            modal.hide();
-            
-            exibirToast(`O item "${itemParaRemoverAtual}" foi removido com sucesso.`);
+            if (itemIndexParaRemover !== null) {
+                const dados = obterDadosMesas();
+                const nomeItem = dados[mesaAtualSelecionada].itens[itemIndexParaRemover].produto;
+                
+                dados[mesaAtualSelecionada].itens.splice(itemIndexParaRemover, 1);
+                salvarDadosMesas(dados);
+                
+                const modalElement = document.getElementById('modalConfirmarRemocao');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+                
+                exibirToast(`O item "${nomeItem}" foi removido com sucesso.`);
+                itemIndexParaRemover = null;
+            }
+        });
+
+        window.onload = function() {
+            renderizarMapaMesas();
+            carregarProdutosNoSelect();
+        };
+
+        // Escuta alterações vindas do Admin/Cozinha/Caixa e atualiza tudo em tempo real
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'burguerflow_mesas') {
+                renderizarMapaMesas();
+                if (mesaAtualSelecionada) {
+                    atualizarPainelDetalhes(mesaAtualSelecionada);
+                }
+            }
+            if (e.key === 'burguerflow_cardapio') {
+                carregarProdutosNoSelect();
+            }
         });
     </script>
 </body>

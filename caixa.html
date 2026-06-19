@@ -29,48 +29,8 @@
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Mesa 01</strong></td>
-                            <td><span class="badge bg-danger">Consumo Ativo</span></td>
-                            <td class="fw-bold">R$ 46,90</td>
-                            <td class="text-center">
-                                <button onclick="abrirDetalhesMesa('01', 'R$ 46,90', '1x Combo Burguer Duplo (R$ 38,90)<br>1x Suco Natural (R$ 8,00)')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mesa 02</strong></td>
-                            <td><span class="badge bg-warning text-dark fw-bold">Aguardando Pagamento</span></td>
-                            <td class="fw-bold text-success fs-5">R$ 30,90</td>
-                            <td class="text-center">
-                                <button onclick="abrirDetalhesMesa('02', 'R$ 30,90', '1x X-Burger Clássico (R$ 24,90)<br>1x Coca-Cola 350ml (R$ 6,00)')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mesa 03</strong></td>
-                            <td><span class="badge bg-danger">Consumo Ativo</span></td>
-                            <td class="fw-bold">R$ 15,00</td>
-                            <td class="text-center">
-                                <button onclick="abrirDetalhesMesa('03', 'R$ 15,00', '1x Porção Anéis de Cebola (R$ 15,00)')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mesa 04</strong></td>
-                            <td><span class="badge bg-danger">Consumo Ativo</span></td>
-                            <td class="fw-bold">R$ 59,80</td>
-                            <td class="text-center">
-                                <button onclick="abrirDetalhesMesa('04', 'R$ 59,80', '2x X-Salada Especial (R$ 53,80)<br>1x Refrigerante 2L (R$ 6,00)')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="tabela-caixa-corpo">
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -85,7 +45,7 @@
                 </div>
                 <div class="modal-body">
                     <h6 class="text-muted small mb-2">Produtos Consumidos:</h6>
-                    <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3"></div>
+                    <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3" style="max-height: 250px; overflow-y: auto;"></div>
                     <div class="d-flex justify-content-between align-items-center border-top pt-2">
                         <span class="fw-bold">VALOR TOTAL:</span>
                         <span id="modal-total-mesa" class="fs-4 fw-bold text-success">R$ 0,00</span>
@@ -93,7 +53,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarPagamentoDoModal()">
+                    <button type="button" class="btn btn-verde btn-sm px-3" id="btnProcessarBaixa">
                         <i class="bi bi-currency-dollar"></i> Processar Baixa
                     </button>
                 </div>
@@ -145,12 +105,22 @@
         let modalDetalhes;
         let modalPagamento;
         let mesaSelecionadaCaixa = "";
-        let totalSelecionadoCaixa = "";
+        let totalCalculadoMesa = 0;
 
         document.addEventListener("DOMContentLoaded", function() {
             modalDetalhes = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
             modalPagamento = new bootstrap.Modal(document.getElementById('modalProcessarPagamento'));
+            renderizarPainelCaixa();
         });
+
+        function obterDadosMesas() {
+            return JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
+        }
+
+        function salvarDadosMesas(dados) {
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+            renderizarPainelCaixa();
+        }
 
         function exibirToastCaixa(mensagem) {
             document.getElementById('toastCaixaMensagem').innerText = mensagem;
@@ -159,32 +129,180 @@
             toast.show();
         }
 
-        function abrirDetalhesMesa(mesa, total, listaItens) {
-            mesaSelecionadaCaixa = mesa;
-            totalSelecionadoCaixa = total;
-            document.getElementById('modal-num-mesa').innerText = mesa;
-            document.getElementById('modal-total-mesa').innerText = total;
-            document.getElementById('modal-lista-produtos').innerHTML = listaItens;
+        // --- BUSCA PREÇO DINÂMICO DO LOCALSTORAGE OU USA O PADRÃO ---
+        function obterPrecoDoProduto(nomeProdutoFormatado) {
+            // Separa o nome limpo se a string vier com o preço junto (Ex: "X-Burger Clássico - R$ 24,90")
+            const nomeLimpo = nomeProdutoFormatado.split(" - ")[0].trim();
+            
+            // Puxa a tabela dinâmica do Admin
+            const precosPainel = JSON.parse(localStorage.getItem('burguerflow_precos')) || {};
+            
+            // Tabela reserva de contingência
+            const tabelaPrecosPadrao = {
+                "X-Burger Clássico": 24.90,
+                "X-Salada Especial": 26.90,
+                "Batata Frita M": 12.00,
+                "Coca-Cola 350ml": 6.00,
+                "Suco Natural": 8.00
+            };
+
+            // Retorna o valor cadastrado pelo admin, ou o padrão da comanda, ou 0 caso não ache nada
+            return precosPainel[nomeLimpo] || tabelaPrecosPadrao[nomeLimpo] || 0;
+        }
+
+        // --- CALCULAR TOTAL E GERAR DETALHES DE UMA MESA ---
+        function calcularMesa(itens) {
+            let total = 0;
+            let listaHTML = "";
+
+            if (itens.length === 0) {
+                listaHTML = `<span class="text-muted fst-italic">Nenhum item consumido.</span>`;
+            } else {
+                itens.forEach(item => {
+                    // Obtém o preço dinamicamente baseado no nome do produto
+                    const preco = obterPrecoDoProduto(item.produto);
+                    total += preco;
+                    
+                    listaHTML += `
+                        <div class="d-flex justify-content-between mb-1 border-bottom pb-1 small">
+                            <span>1x ${item.produto.split(" - ")[0]}</span>
+                            <span class="fw-bold">R$ ${preco.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    `;
+                });
+            }
+            return { total, listaHTML };
+        }
+
+        // --- RENDERIZAR TABELA DO CAIXA DINAMICAMENTE ---
+        function renderizarPainelCaixa() {
+            const dados = obterDadosMesas();
+            const tableCorpo = document.getElementById('tabela-caixa-corpo');
+            tableCorpo.innerHTML = "";
+
+            let temMesaOcupada = false;
+
+            Object.keys(dados).forEach(numMesa => {
+                const mesa = dados[numMesa];
+
+                // Só exibe na tabela se a mesa estiver Ocupada
+                if (mesa.status === "Ocupada") {
+                    temMesaOcupada = true;
+                    
+                    // Faz a soma dos itens dinamicamente
+                    const calculo = calcularMesa(mesa.itens);
+                    
+                    // Se todos os itens da comanda já estiverem "Entregue", muda o visual do status
+                    const todosEntregues = mesa.itens.length > 0 && mesa.itens.every(item => item.status === "Entregue");
+                    const badgeStatus = todosEntregues 
+                        ? `<span class="badge bg-warning text-dark fw-bold"><i class="bi bi-bell-fill animate-flicker"></i> Aguardando Pagamento</span>`
+                        : `<span class="badge bg-danger">Consumo Ativo</span>`;
+
+                    tableCorpo.innerHTML += `
+                        <tr>
+                            <td><strong>Mesa ${numMesa}</strong></td>
+                            <td>${badgeStatus}</td>
+                            <td class="fw-bold text-success fs-6">R$ ${calculo.total.toFixed(2).replace('.', ',')}</td>
+                            <td class="text-center">
+                                <button onclick="abrirDetalhesMesa('${numMesa}')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
+                                    <i class="bi bi-eye"></i> Detalhes
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (!temMesaOcupada) {
+                tableCorpo.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                            Nenhuma mesa ocupada ou em consumo no momento.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // --- ABRIR DETALHES ---
+        function abrirDetalhesMesa(numMesa) {
+            mesaSelecionadaCaixa = numMesa;
+            const dados = obterDadosMesas();
+            const calculo = calcularMesa(dados[numMesa].itens);
+
+            totalCalculadoMesa = calculo.total;
+
+            document.getElementById('modal-num-mesa').innerText = numMesa;
+            document.getElementById('modal-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
+            document.getElementById('modal-lista-produtos').innerHTML = calculo.listaHTML;
+            
             modalDetalhes.show();
         }
 
-        function solicitarBaixaPagamento(mesa, total) {
-            document.getElementById('confirm-num-mesa').innerText = mesa;
-            document.getElementById('confirm-total-mesa').innerText = total;
-            modalPagamento.show();
-        }
-
-        function confirmarPagamentoDoModal() {
+        // --- ENVOLVER AS DUAS MODAIS ---
+        document.getElementById('btnProcessarBaixa').addEventListener('click', function() {
             modalDetalhes.hide();
             setTimeout(() => {
-                solicitarBaixaPagamento(mesaSelecionadaCaixa, totalSelecionadoCaixa);
+                document.getElementById('confirm-num-mesa').innerText = mesaSelecionadaCaixa;
+                document.getElementById('confirm-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
+                modalPagamento.show();
             }, 300);
-        }
+        });
 
+        // --- FINALIZAR PAGAMENTO E LIBERAR A MESA NO BANCO ---
         document.getElementById('btnConfirmarBaixaEfetiva').addEventListener('click', function() {
             modalPagamento.hide();
+    
+            const dados = obterDadosMesas();
             const forma = document.getElementById('formaPagamento').value;
-            exibirToastCaixa(`Pagamento da Mesa ${mesaSelecionadaCaixa} recebido via ${forma}! Comanda encerrada.`);
+            const mesaItens = dados[mesaSelecionadaCaixa].itens;
+
+            // --- ALIMENTA O HISTÓRICO PARA O ADMIN LER ---
+            const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+            const novaVenda = {
+                mesa: mesaSelecionadaCaixa,
+                valorTotal: totalCalculadoMesa,
+                formaPagamento: forma,
+                data: new Date().toISOString().split('T')[0],
+                itens: mesaItens
+            };
+            historico.push(novaVenda);
+            localStorage.setItem('burguerflow_historico', JSON.stringify(historico));
+            // ---------------------------------------------
+
+            // Reseta a mesa para o estado padrão
+            dados[mesaSelecionadaCaixa] = {
+                status: "Livre",
+                itens: []
+            };
+
+            salvarDadosMesas(dados);
+            exibirToastCaixa(`Pagamento da Mesa ${mesaSelecionadaCaixa} recebido via ${forma}! Comanda encerrada e mesa liberada. 💵`);
+        });
+
+        // Radar para atualizar a tela caso o garçom lance pedidos ou o cardápio mude em outra aba
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'burguerflow_mesas') {
+                renderizarPainelCaixa();
+                
+                const modalAberta = document.getElementById('modalDetalhesCaixa').classList.contains('show');
+                if (modalAberta && mesaSelecionadaCaixa) {
+                    const dados = obterDadosMesas();
+                    if (dados[mesaSelecionadaCaixa] && dados[mesaSelecionadaCaixa].status === "Ocupada") {
+                        const calculo = calcularMesa(dados[mesaSelecionadaCaixa].itens);
+                        totalCalculadoMesa = calculo.total;
+                        document.getElementById('modal-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
+                        document.getElementById('modal-lista-produtos').innerHTML = calculo.listaHTML;
+                    } else {
+                        modalDetalhes.hide();
+                    }
+                }
+            }
+            
+            if (e.key === 'burguerflow_precos') {
+                renderizarPainelCaixa();
+            }
         });
     </script>
 </body>

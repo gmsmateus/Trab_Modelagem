@@ -16,109 +16,8 @@
             <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
         </div>
 
-        <div class="row g-3 px-1" style="max-height: 75vh; overflow-y: auto;">
-            
-            <div id="pedido-m02" class="col-md-6 col-lg-4">
-                <div class="card card-sistema h-100 shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                        <strong class="fs-5">Mesa 02</strong>
-                        <span id="badge-m02" class="badge bg-warning text-dark fw-bold">Pendente</span>
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
-                            <p class="mb-1"><strong>1x X-Burger Clássico</strong></p>
-                            <p class="small text-muted mb-3 fst-italic">Obs: Sem cebola, carne mal passada.</p>
-                            <p class="mb-1"><strong>1x Batata Frita M</strong></p>
-                        </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button id="btn-ini-m02" onclick="iniciarPreparo('m02')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
-                                <i class="bi bi-play-fill"></i> Iniciar
-                            </button>
-                            <button id="btn-pronto-m02" onclick="solicitarConclusaoCozinha('pedido-m02', 'Mesa 02')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
-                                <i class="bi bi-check-circle"></i> Pronto
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <div class="row g-3 px-1" id="fila-cozinha-container" style="max-height: 75vh; overflow-y: auto;">
             </div>
-
-            <div id="pedido-m04" class="col-md-6 col-lg-4">
-                <div class="card card-sistema h-100 shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                        <strong class="fs-5">Mesa 04</strong>
-                        <span id="badge-m04" class="badge bg-warning text-dark fw-bold">Pendente</span>
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
-                            <p class="mb-1"><strong>2x X-Salada Especial</strong></p>
-                            <p class="small text-muted mb-3 fst-italic">Obs: Um deles sem tomate.</p>
-                            <p class="mb-1"><strong>1x Coca-Cola 2L</strong></p>
-                        </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button id="btn-ini-m04" onclick="iniciarPreparo('m04')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
-                                <i class="bi bi-play-fill"></i> Iniciar
-                            </button>
-                            <button id="btn-pronto-m04" onclick="solicitarConclusaoCozinha('pedido-m04', 'Mesa 04')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
-                                <i class="bi bi-check-circle"></i> Pronto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="pedido-m01" class="col-md-6 col-lg-4">
-                <div class="card card-sistema h-100 shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                        <strong class="fs-5">Mesa 01</strong>
-                        <span id="badge-m01" class="badge bg-warning text-dark fw-bold">Pendente</span>
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
-                            <p class="mb-1"><strong>1x Combo Burguer Duplo</strong></p>
-                            <p class="small text-muted mb-3 fst-italic">Obs: Adicionar maionese caseira extra.</p>
-                            <p class="mb-1"><strong>1x Suco Natural de Laranja</strong></p>
-                        </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button id="btn-ini-m01" onclick="iniciarPreparo('m01')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
-                                <i class="bi bi-play-fill"></i> Iniciar
-                            </button>
-                            <button id="btn-pronto-m01" onclick="solicitarConclusaoCozinha('pedido-m01', 'Mesa 01')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
-                                <i class="bi bi-check-circle"></i> Pronto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="pedido-m03" class="col-md-6 col-lg-4">
-                <div class="card card-sistema h-100 shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                        <strong class="fs-5">Mesa 03</strong>
-                        <span id="badge-m03" class="badge bg-warning text-dark fw-bold">Pendente</span>
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
-                            <p class="mb-1"><strong>1x Porção de Anéis de Cebola</strong></p>
-                            <p class="small text-muted mb-3 fst-italic">Obs: Bem crocantes.</p>
-                            <p class="mb-1"><strong>2x Cerveja Artesanal</strong></p>
-                        </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button id="btn-ini-m03" onclick="iniciarPreparo('m03')" class="btn btn-outline-warning btn-perfil w-50 py-2 small">
-                                <i class="bi bi-play-fill"></i> Iniciar
-                            </button>
-                            <button id="btn-pronto-m03" onclick="solicitarConclusaoCozinha('pedido-m03', 'Mesa 03')" class="btn btn-verde btn-perfil w-50 py-2 small" disabled>
-                                <i class="bi bi-check-circle"></i> Pronto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
 
     <div class="modal fade" id="modalConfirmarCozinha" tabindex="-1" aria-hidden="true">
@@ -151,51 +50,161 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        let idElementoAtual = "";
-        let nomeMesaAtual = "";
+        let mesaSelecionadaParaPronto = "";
+
+        function obterDadosMesas() {
+            return JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
+        }
+
+        function salvarDadosMesas(dados) {
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+            renderizarFilaCozinha(); // Remonta a tela na hora
+        }
 
         function exibirToastCozinha(mensagem) {
-            document.getElementById('toastCozinhaMensagem').innerText = message = mensagem;
+            document.getElementById('toastCozinhaMensagem').innerText = mensagem;
             const toastEl = document.getElementById('toastCozinha');
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
             toast.show();
         }
 
-        function iniciarPreparo(idMesa) {
-            const badge = document.getElementById(`badge-${idMesa}`);
-            badge.innerText = "Em Preparo";
-            badge.className = "badge bg-primary text-white fw-bold";
-            
-            document.getElementById(`btn-ini-${idMesa}`).disabled = true;
-            document.getElementById(`btn-pronto-${idMesa}`).disabled = false;
-            
-            exibirToastCozinha(`Preparo iniciado para a ${idMesa.toUpperCase()}!`);
+        // --- RENDERIZAR FILA DA COZINHA DINAMICAMENTE ---
+        function renderizarFilaCozinha() {
+            const dados = obterDadosMesas();
+            const container = document.getElementById('fila-cozinha-container');
+            container.innerHTML = ""; // Limpa os estáticos
+
+            let temPedido = false;
+
+            Object.keys(dados).forEach(numMesa => {
+                const mesa = dados[numMesa];
+                
+                // Filtra para pegar apenas itens que foram de fato ENVIADOS (status Pendente ou Em preparo)
+                const itensParaCozinha = mesa.itens.filter(item => item.status === "Pendente" || item.status === "Em preparo");
+
+                if (itensParaCozinha.length > 0) {
+                    temPedido = true;
+
+                    // Determina o status geral da Mesa baseado nos itens dela
+                    const possuiItemEmPreparo = itensParaCozinha.some(item => item.status === "Em preparo");
+                    const statusGeralText = possuiItemEmPreparo ? "Em Preparo" : "Pendente";
+                    const statusGeralBadge = possuiItemEmPreparo ? "bg-primary text-white" : "bg-warning text-dark";
+
+                    // Cria o HTML dos itens do card
+                    let itensHTML = "";
+                    itensParaCozinha.forEach(item => {
+                        const obsHTML = item.obs ? `<p class="small text-muted mb-3 fst-italic">Obs: ${item.obs}</p>` : '';
+                        itensHTML += `
+                            <p class="mb-1"><strong>1x ${item.produto}</strong></p>
+                            ${obsHTML}
+                        `;
+                    });
+
+                    // Controla ativação dos botões
+                    const btnIniciarDisabled = possuiItemEmPreparo ? "disabled" : "";
+                    const btnProntoDisabled = possuiItemEmPreparo ? "" : "disabled";
+
+                    container.innerHTML += `
+                        <div id="pedido-m${numMesa}" class="col-md-6 col-lg-4">
+                            <div class="card card-sistema h-100 shadow-sm border-dark">
+                                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                                    <strong class="fs-5">Mesa ${numMesa}</strong>
+                                    <span id="badge-m${numMesa}" class="badge ${statusGeralBadge} fw-bold">${statusGeralText}</span>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted border-bottom pb-2">ITENS DO PEDIDO:</h6>
+                                        ${itensHTML}
+                                    </div>
+                                    <div class="d-flex gap-2 mt-4">
+                                        <button id="btn-ini-m${numMesa}" onclick="iniciarPreparoMesa('${numMesa}')" class="btn btn-outline-warning btn-perfil w-50 py-2 small" ${btnIniciarDisabled}>
+                                            <i class="bi bi-play-fill"></i> Iniciar
+                                        </button>
+                                        <button id="btn-pronto-m${numMesa}" onclick="solicitarConclusaoCozinha('${numMesa}')" class="btn btn-verde btn-perfil w-50 py-2 small" ${btnProntoDisabled}>
+                                            <i class="bi bi-check-circle"></i> Pronto
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!temPedido) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-emoji-smile text-muted fs-1 mb-2 d-block"></i>
+                        <p class="text-muted fs-5">Nenhum pedido pendente na chapa por enquanto!</p>
+                    </div>
+                `;
+            }
         }
 
-        function solicitarConclusaoCozinha(idElemento, nomeMesa) {
-            idElementoAtual = idElemento;
-            nomeMesaAtual = nomeMesa;
-            document.getElementById('nome-mesa-cozinha').innerText = nomeMesa;
+        // --- INICIAR PREPARO DA MESA ---
+        function iniciarPreparoMesa(numMesa) {
+            const dados = obterDadosMesas();
+            
+            // Passa todos os itens Pendentes dessa mesa para "Em preparo"
+            dados[numMesa].itens.forEach(item => {
+                if (item.status === "Pendente") {
+                    item.status = "Em preparo";
+                }
+            });
+
+            salvarDadosMesas(dados);
+            exibirToastCozinha(`Preparo iniciado para a Mesa ${numMesa}!`);
+        }
+
+        // --- ABRIR MODAL DE CONCLUSÃO ---
+        function solicitarConclusaoCozinha(numMesa) {
+            mesaSelecionadaParaPronto = numMesa;
+            document.getElementById('nome-mesa-cozinha').innerText = `Mesa ${numMesa}`;
             
             const modalEl = document.getElementById('modalConfirmarCozinha');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
         }
 
+        // --- CONFIRMAR "PRONTO" NO MODAL ---
         document.getElementById('btnConfirmarPronto').addEventListener('click', function() {
             const modalEl = document.getElementById('modalConfirmarCozinha');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
             
-            const card = document.getElementById(idElementoAtual);
+            const dados = obterDadosMesas();
+            
+            // Cozinha finalizou: muda os itens de "Em preparo" para "Entregue"
+            dados[mesaSelecionadaParaPronto].itens.forEach(item => {
+                if (item.status === "Em preparo") {
+                    item.status = "Entregue";
+                }
+            });
+
+            // Aplica efeito de transição visual antes de sumir
+            const card = document.getElementById(`pedido-m${mesaSelecionadaParaPronto}`);
             if (card) {
                 card.style.transition = 'all 0.4s ease';
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.9)';
                 setTimeout(() => {
-                    card.remove();
-                    exibirToastCozinha(`Pedido da ${nomeMesaAtual} finalizado com sucesso!`);
+                    salvarDadosMesas(dados);
+                    exibirToastCozinha(`Pedido da Mesa ${mesaSelecionadaParaPronto} enviado para a expedição!`);
                 }, 400);
+            } else {
+                salvarDadosMesas(dados);
+            }
+        });
+
+        // Carrega a fila assim que entra na tela
+        window.onload = function() {
+            renderizarFilaCozinha();
+        };
+
+        // Escuta alterações vindas da tela do garçom e atualiza a cozinha na hora!
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'burguerflow_mesas') {
+            renderizarFilaCozinha();
             }
         });
     </script>

@@ -13,7 +13,7 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-gear-fill"></i> Painel Administrativo</h2>
-            <a href="dashboard.html" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Sair do Panel</a>
+            <a href="dashboard.html" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Sair do Painel</a>
         </div>
 
         <div class="row g-4">
@@ -23,7 +23,7 @@
                     <h4 class="mb-4 text-muted"><i class="bi bi-sliders"></i> Configurações e Relatórios</h4>
                     
                     <div class="d-grid gap-3">
-                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalCardapio">
+                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalCardapio" onclick="renderizarListaModalCardapio()">
                             <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio e Itens
                         </button>
                         
@@ -31,7 +31,7 @@
                             <i class="bi bi-lock-key me-2 text-primary"></i> Alterar Senha do Perfil
                         </button>
 
-                        <button class="btn btn-verde btn-perfil text-start py-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalRelatorio">
+                        <button class="btn btn-verde btn-perfil text-start py-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalRelatorio" onclick="carregarMétricasRelatorio()">
                             <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Gerar Relatório de Vendas (Filtro por Data)
                         </button>
                     </div>
@@ -47,7 +47,7 @@
                             <label class="form-label fw-bold">X-Burger Clássico</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="24.90">
+                                <input type="number" id="preco-burger" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
                             </div>
                         </div>
                         
@@ -55,7 +55,7 @@
                             <label class="form-label fw-bold">X-Salada Especial</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="26.90">
+                                <input type="number" id="preco-salada" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
                             </div>
                         </div>
 
@@ -63,7 +63,7 @@
                             <label class="form-label fw-bold">Batata Frita M</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00" value="12.00">
+                                <input type="number" id="preco-batata" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
                             </div>
                         </div>
                         
@@ -89,36 +89,50 @@
     </div>
 
     <div class="modal fade" id="modalCardapio" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content card-sistema">
                 <div class="modal-header border-bottom-0">
                     <h5 class="modal-title fw-bold"><i class="bi bi-egg-fried text-warning"></i> Ajustar Cardápio Interno</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nome do Item/Produto</label>
-                        <input type="text" class="form-control" placeholder="Ex: X-Bacon Artesanal">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Categoria</label>
-                        <select class="form-select">
-                            <option>Lanches</option>
-                            <option>Bebidas</option>
-                            <option>Porções / Acompanhamentos</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Preço de Venda Base</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input type="number" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
+                    <div class="row g-2 mb-4 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-muted mb-2">Cadastrar Novo Item:</h6>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Nome do Produto</label>
+                            <input type="text" id="modal-nome-produto" class="form-control form-control-sm" placeholder="Ex: X-Bacon Artesanal">
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Preço Base (R$)</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" id="modal-preco-produto" step="0.01" class="form-control" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-verde btn-sm w-100" onclick="salvarItemCardapio()">
+                                <i class="bi bi-plus-circle-fill"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted mb-2">Itens Atuais no Sistema:</h6>
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Preço</th>
+                                    <th class="text-center">Remover</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-tabela-cardapio-corpo">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="salvarItemCardapio()" data-bs-dismiss="modal">Salvar e Publicar</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -164,14 +178,14 @@
                     <div class="row g-2 mb-4 bg-light p-3 rounded border">
                         <div class="col-md-5">
                             <label class="form-label small fw-bold">Data Inicial</label>
-                            <input type="date" class="form-control form-control-sm" value="2026-05-18">
+                            <input type="date" id="data-inicial" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-5">
                             <label class="form-label small fw-bold">Data Final</label>
-                            <input type="date" class="form-control form-control-sm" value="2026-05-18">
+                            <input type="date" id="data-final" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-dark btn-sm w-100" onclick="filtrarRelatorioData()"><i class="bi bi-filter"></i> Filtrar</button>
+                            <button class="btn btn-dark btn-sm w-100" onclick="carregarMétricasRelatorio()"><i class="bi bi-filter"></i> Filtrar</button>
                         </div>
                     </div>
 
@@ -188,10 +202,10 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>X-Burger Clássico</strong></td>
-                                    <td>42 unidades</td>
-                                    <td class="text-success fw-bold">R$ 1.245,80</td>
-                                    <td>R$ 29,66</td>
+                                    <td><strong id="rep-mais-vendido">Nenhum</strong></td>
+                                    <td id="rep-total-pedidos">0</td>
+                                    <td class="text-success fw-bold" id="rep-faturamento">R$ 0,00</td>
+                                    <td id="rep-ticket">R$ 0,00</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -219,6 +233,57 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // --- INICIALIZAÇÃO DO BANCO DE DADOS LOCAL COMPARTILHADO ---
+        const precosPadrao = {
+            "X-Burger Clássico": 24.90,
+            "X-Salada Especial": 26.90,
+            "Batata Frita M": 12.00,
+            "Coca-Cola 350ml": 6.00,
+            "Suco Natural": 8.00
+        };
+
+        const cardapioPadrao = [
+            "X-Burger Clássico - R$ 24,90",
+            "X-Salada Especial - R$ 26,90",
+            "Batata Frita M - R$ 12,00",
+            "Coca-Cola 350ml - R$ 6,00",
+            "Suco Natural - R$ 8,00"
+        ];
+
+        window.onload = function() {
+            if (!localStorage.getItem('burguerflow_precos')) {
+                localStorage.setItem('burguerflow_precos', JSON.stringify(precosPadrao));
+            }
+            if (!localStorage.getItem('burguerflow_cardapio')) {
+                localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapioPadrao));
+            }
+            
+            definirDatasFiltro();
+            carregarPrecosInputs();
+        };
+
+        function obterPrecos() {
+            return JSON.parse(localStorage.getItem('burguerflow_precos')) || precosPadrao;
+        }
+
+        function obterCardapio() {
+            return JSON.parse(localStorage.getItem('burguerflow_cardapio')) || cardapioPadrao;
+        }
+
+        // Carrega os valores numéricos salvos nos campos de alteração rápida da tela principal
+        function carregarPrecosInputs() {
+            const precos = obterPrecos();
+            if(precos["X-Burger Clássico"] !== undefined) document.getElementById('preco-burger').value = precos["X-Burger Clássico"].toFixed(2);
+            if(precos["X-Salada Especial"] !== undefined) document.getElementById('preco-salada').value = precos["X-Salada Especial"].toFixed(2);
+            if(precos["Batata Frita M"] !== undefined) document.getElementById('preco-batata').value = precos["Batata Frita M"].toFixed(2);
+        }
+
+        function definirDatasFiltro() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data-inicial').value = hoje;
+            document.getElementById('data-final').value = hoje;
+        }
+
         function exibirToastAdmin(mensagem, iconeClass = "bi-check-circle-fill text-success") {
             const iconeEl = document.getElementById('toastAdminIcone');
             iconeEl.className = `bi ${iconeClass}`;
@@ -229,34 +294,168 @@
             toast.show();
         }
 
+        // --- SALVAR ALTERAÇÃO DE PREÇOS RÁPIDOS ---
         function salvarPrecosRapidos() {
-            exibirToastAdmin("Preços do cardápio global atualizados com sucesso!");
+            const precos = obterPrecos();
+            const cardapio = obterCardapio();
+            
+            precos["X-Burger Clássico"] = parseFloat(document.getElementById('preco-burger').value) || 0;
+            precos["X-Salada Especial"] = parseFloat(document.getElementById('preco-salada').value) || 0;
+            precos["Batata Frita M"] = parseFloat(document.getElementById('preco-batata').value) || 0;
+
+            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
+
+            // Atualiza também as strings legíveis do cardápio para sincronizar com o Garçom
+            const itensParaAtualizar = ["X-Burger Clássico", "X-Salada Especial", "Batata Frita M"];
+            itensParaAtualizar.forEach(nomeItem => {
+                const index = cardapio.findIndex(item => item.startsWith(nomeItem));
+                if (index !== -1) {
+                    cardapio[index] = `${nomeItem} - R$ ${precos[nomeItem].toFixed(2).replace('.', ',')}`;
+                }
+            });
+            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
+
+            exibirToastAdmin("Preços rápidos salvos e publicados no sistema!");
+        }
+
+        // --- RENDERIZAR ITENS DENTRO DA MODAL CARDÁPIO ---
+        function renderizarListaModalCardapio() {
+            const cardapio = obterCardapio();
+            const precos = obterPrecos();
+            const tabelaCorpo = document.getElementById('modal-tabela-cardapio-corpo');
+            tabelaCorpo.innerHTML = "";
+
+            if (cardapio.length === 0) {
+                tabelaCorpo.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Nenhum item no cardápio.</td></tr>`;
+                return;
+            }
+
+            cardapio.forEach((item, index) => {
+                const nomeLimpo = item.split(" - ")[0].trim();
+                const preco = precos[nomeLimpo] || 0;
+
+                tabelaCorpo.innerHTML += `
+                    <tr>
+                        <td><strong>${nomeLimpo}</strong></td>
+                        <td class="text-success fw-bold">R$ ${preco.toFixed(2).replace('.', ',')}</td>
+                        <td class="text-center">
+                            <button onclick="removerItemCardapio(${index}, '${nomeLimpo}')" class="btn btn-sm btn-link text-danger p-0">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- MODAL: SALVAR E PUBLICAR NOVO ITEM ---
+        function salvarItemCardapio() {
+            const inputNome = document.getElementById('modal-nome-produto');
+            const inputPreco = document.getElementById('modal-preco-produto');
+
+            const nome = inputNome.value.trim();
+            const preco = parseFloat(inputPreco.value);
+
+            if (!nome || isNaN(preco)) {
+                exibirToastAdmin("Preencha o nome e o preço corretamente.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+
+            const cardapio = obterCardapio();
+            const precos = obterPrecos();
+
+            if (precos[nome] !== undefined) {
+                exibirToastAdmin(`O item "${nome}" já existe!`, "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+
+            // Injeta nas duas estruturas (legível para garçom e mapa numérico para o caixa)
+            cardapio.push(`${nome} - R$ ${preco.toFixed(2).replace('.', ',')}`);
+            precos[nome] = preco;
+
+            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
+            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
+
+            // Reseta campos e atualiza modal e tela principal
+            inputNome.value = "";
+            inputPreco.value = "";
+            renderizarListaModalCardapio();
+            carregarPrecosInputs();
+
+            exibirToastAdmin(`"${nome}" adicionado e publicado com sucesso!`, "bi-plus-circle-fill text-warning");
+        }
+
+        // --- MODAL: REMOVER ITEM DO CARDÁPIO ---
+        function removerItemCardapio(index, nomeLimpo) {
+            const cardapio = obterCardapio();
+            const precos = obterPrecos();
+
+            cardapio.splice(index, 1);
+            delete precos[nomeLimpo];
+
+            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
+            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
+
+            renderizarListaModalCardapio();
+            carregarPrecosInputs();
+            exibirToastAdmin(`"${nomeLimpo}" removido com sucesso.`);
+        }
+
+        // --- CALCULAR RELATÓRIO DE VENDAS COMPLETO ---
+        function carregarMétricasRelatorio() {
+            const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+            const dataInicial = document.getElementById('data-inicial').value;
+            const dataFinal = document.getElementById('data-final').value;
+            
+            let faturamentoTotal = 0;
+            let totalPedidos = 0;
+            let contagemProdutos = {};
+
+            historico.forEach(venda => {
+                // Filtro por data integrado
+                if (venda.data >= dataInicial && venda.data <= dataFinal) {
+                    totalPedidos++;
+                    faturamentoTotal += venda.valorTotal;
+                    venda.itens.forEach(item => {
+                        let nomeLimpo = item.produto.split(" - ")[0].trim();
+                        contagemProdutos[nomeLimpo] = (contagemProdutos[nomeLimpo] || 0) + 1;
+                    });
+                }
+            });
+
+            let maisVendido = "Nenhum";
+            let maxVendas = 0;
+            Object.keys(contagemProdutos).forEach(prod => {
+                if (contagemProdutos[prod] > maxVendas) {
+                    maxVendas = contagemProdutos[prod];
+                    maisVendido = `${prod} (${maxVendas} un)`;
+                }
+            });
+
+            let ticketMedio = totalPedidos > 0 ? (faturamentoTotal / totalPedidos) : 0;
+
+            document.getElementById('rep-mais-vendido').innerText = maisVendido;
+            document.getElementById('rep-total-pedidos').innerText = `${totalPedidos} comandas`;
+            document.getElementById('rep-faturamento').innerText = `R$ ${faturamentoTotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('rep-ticket').innerText = `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
         }
 
         function salvarNovaSenhaMaster() {
             const novaSenha = document.getElementById('novaSenhaMaster').value;
             if (novaSenha.trim() !== "") {
-                exibirToastAdmin("Senha Master do sistema redefinida! (Qualquer credencial continuará aceita para testes)", "bi-shield-check text-warning");
+                exibirToastAdmin("Senha Master redefinida com sucesso!", "bi-shield-check text-warning");
                 document.getElementById('novaSenhaMaster').value = "";
             } else {
-                exibirToastAdmin("Digite uma senha válida antes de salvar.", "bi-exclamation-triangle-fill text-danger");
+                exibirToastAdmin("Digite uma senha válida.", "bi-exclamation-triangle-fill text-danger");
             }
         }
 
-        function salvarItemCardapio() {
-            exibirToastAdmin("Novo item cadastrado e publicado no cardápio!", "bi-plus-circle-fill text-warning");
-        }
-
         function atualizarSenhaAdmin() {
-            exibirToastAdmin("Senha administrativa alterada com sucesso!", "bi-shield-check text-primary");
-        }
-
-        function filtrarRelatorioData() {
-            exibirToastAdmin("Filtro de período processado e tabela atualizada!", "bi-funnel-fill text-info");
+            exibirToastAdmin("Senha administrativa atualizada!", "bi-shield-check text-primary");
         }
 
         function imprimirRelatorioPDF() {
-            exibirToastAdmin("Gerando documento... Enviado para a fila de impressão.", "bi-printer-fill text-light");
+            window.print();
         }
     </script>
 </body>
