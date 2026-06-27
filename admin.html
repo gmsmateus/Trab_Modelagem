@@ -7,218 +7,270 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
+    <style>
+        .btn-nav-admin {
+            background: none;
+            border: none;
+            border-radius: 10px;
+            text-align: left;
+            padding: 14px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #495057;
+            transition: background 0.18s, color 0.18s;
+            width: 100%;
+        }
+        .btn-nav-admin:hover {
+            background: #f1f3f5;
+            color: #212529;
+        }
+        .btn-nav-admin.ativo {
+            background: #212529;
+            color: #fff;
+        }
+        .btn-nav-admin.ativo i { color: #fff !important; }
+
+        #painel-conteudo {
+            min-height: 420px;
+        }
+        .painel-secao { display: none; }
+        .painel-secao.visivel { display: block; }
+
+        .painel-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+            color: #adb5bd;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-4">
-        
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-gear-fill"></i> Painel Administrativo</h2>
             <a href="dashboard.html" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-left"></i> Sair do Painel</a>
         </div>
 
         <div class="row g-4">
-            
-            <div class="col-md-6">
-                <div class="card card-sistema p-4 shadow-sm h-100">
-                    <h4 class="mb-4 text-muted"><i class="bi bi-sliders"></i> Configurações e Relatórios</h4>
-                    
-                    <div class="d-grid gap-3">
-                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalCardapio" onclick="renderizarListaModalCardapio()">
-                            <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio e Itens
-                        </button>
-                        
-                        <button class="btn btn-outline-dark btn-perfil text-start py-3" data-bs-toggle="modal" data-bs-target="#modalSenha">
-                            <i class="bi bi-lock-key me-2 text-primary"></i> Alterar Senha do Perfil
+
+            <!-- ========== SIDEBAR DE NAVEGAÇÃO ========== -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card card-sistema p-3 shadow-sm">
+                    <p class="text-muted small fw-bold px-2 mb-2" style="letter-spacing:.04em;">MENU</p>
+                    <div class="d-flex flex-column gap-1">
+
+                        <button class="btn-nav-admin" onclick="abrirSecao('cardapio', this)" id="btn-nav-cardapio">
+                            <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio
                         </button>
 
-                        <button class="btn btn-verde btn-perfil text-start py-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalRelatorio" onclick="carregarMétricasRelatorio()">
-                            <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Gerar Relatório de Vendas (Filtro por Data)
+                        <button class="btn-nav-admin" onclick="abrirSecao('senhaAdmin', this)" id="btn-nav-senhaAdmin">
+                            <i class="bi bi-shield-lock me-2 text-primary"></i> Senha do Administrador
                         </button>
+
+                        <button class="btn-nav-admin" onclick="abrirSecao('senhaSistema', this)" id="btn-nav-senhaSistema">
+                            <i class="bi bi-door-open me-2 text-secondary"></i> Senha do Sistema
+                        </button>
+
+                        <button class="btn-nav-admin" onclick="abrirSecao('relatorio', this)" id="btn-nav-relatorio">
+                            <i class="bi bi-file-earmark-bar-graph-fill me-2 text-success"></i> Relatório de Vendas
+                        </button>
+
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card card-sistema p-4 shadow-sm h-100 d-flex flex-column justify-content-between">
-                    <div>
-                        <h4 class="mb-4 text-muted"><i class="bi bi-currency-dollar"></i> Alteração de Preços Rápida</h4>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">X-Burger Clássico</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" id="preco-burger" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
+            <!-- ========== PAINEL DE CONTEÚDO DINÂMICO ========== -->
+            <div class="col-md-8 col-lg-9">
+                <div class="card card-sistema p-4 shadow-sm" id="painel-conteudo">
+
+                    <!-- PLACEHOLDER INICIAL -->
+                    <div class="painel-placeholder visivel" id="secao-placeholder">
+                        <i class="bi bi-arrow-left-circle fs-1 mb-3"></i>
+                        <p class="fs-5 fw-bold mb-1">Selecione uma opção</p>
+                        <p class="small text-center">Escolha uma seção no menu ao lado para começar.</p>
+                    </div>
+
+                    <!-- SEÇÃO: CARDÁPIO -->
+                    <div class="painel-secao" id="secao-cardapio">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-egg-fried text-warning me-2"></i> Ajustar Cardápio e Itens</h5>
+
+                        <div class="row g-2 mb-4 p-3 bg-light rounded border">
+                            <h6 class="fw-bold text-muted mb-2">Cadastrar Novo Item:</h6>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Nome do Produto</label>
+                                <input type="text" id="modal-nome-produto" class="form-control form-control-sm" placeholder="Ex: X-Bacon Artesanal">
                             </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">X-Salada Especial</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" id="preco-salada" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Preço Base (R$)</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number" id="modal-preco-produto" step="0.01" class="form-control" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-verde btn-sm w-100" onclick="salvarItemCardapio()">
+                                    <i class="bi bi-plus-circle-fill"></i> Adicionar
+                                </button>
                             </div>
                         </div>
 
+                        <h6 class="fw-bold text-muted mb-2">Itens Atuais no Sistema:</h6>
+                        <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Preço</th>
+                                        <th class="text-center">Remover</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-cardapio-corpo"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: SENHA DO ADMINISTRADOR -->
+                    <div class="painel-secao" id="secao-senhaAdmin">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-shield-lock text-primary me-2"></i> Senha do Administrador</h5>
+                        <p class="text-muted small mb-4">Esta senha protege o acesso ao painel administrativo (<code>login-admin.html</code>).</p>
+
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Batata Frita M</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" id="preco-batata" class="form-control" step="0.01" inputmode="decimal" placeholder="0.00">
+                            <label class="form-label fw-bold">Senha Atual</label>
+                            <div class="input-group has-validation">
+                                <input type="password" id="adminAtual" class="form-control" placeholder="••••••••">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('adminAtual', this)"><i class="bi bi-eye"></i></button>
+                                <div class="invalid-feedback">Senha atual incorreta.</div>
                             </div>
                         </div>
-                        
-                        <button class="btn btn-verde btn-perfil w-100 py-2 mt-2 mb-4" onclick="salvarPrecosRapidos()">
-                            <i class="bi bi-check-lg"></i> Salvar Alterações de Preço
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nova Senha</label>
+                            <div class="input-group">
+                                <input type="password" id="adminNova" class="form-control" placeholder="Digite a nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('adminNova', this)"><i class="bi bi-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Confirmar Nova Senha</label>
+                            <div class="input-group has-validation">
+                                <input type="password" id="adminConfirmar" class="form-control" placeholder="Repita a nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('adminConfirmar', this)"><i class="bi bi-eye"></i></button>
+                                <div class="invalid-feedback" id="adminFeedbackConfirm">As senhas não coincidem.</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-dark w-100 py-2" onclick="salvarSenhaAdmin()">
+                            <i class="bi bi-shield-lock-fill text-primary me-1"></i> Atualizar Senha do Administrador
                         </button>
                     </div>
 
-                    <div class="border-top pt-3">
-                        <h4 class="mb-3 text-muted fs-5"><i class="bi bi-shield-exclamation"></i> Segurança do Sistema</h4>
+                    <!-- SEÇÃO: SENHA DO SISTEMA -->
+                    <div class="painel-secao" id="secao-senhaSistema">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-door-open text-secondary me-2"></i> Senha do Sistema</h5>
+                        <p class="text-muted small mb-4">Esta senha é solicitada na tela de entrada do sistema (<code>index.html</code>) para todos os usuários.</p>
+
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Nova Senha Master do Sistema</label>
-                            <input type="password" id="novaSenhaMaster" class="form-control form-control-sm" placeholder="Digite a nova senha master">
-                        </div>
-                        <button class="btn btn-dark btn-sm w-100 py-2" onclick="salvarNovaSenhaMaster()">
-                            <i class="bi bi-key-fill text-warning"></i> Atualizar Senha do Sistema
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalCardapio" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-egg-fried text-warning"></i> Ajustar Cardápio Interno</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-2 mb-4 p-3 bg-light rounded border">
-                        <h6 class="fw-bold text-muted mb-2">Cadastrar Novo Item:</h6>
-                        <div class="col-md-5">
-                            <label class="form-label small fw-bold">Nome do Produto</label>
-                            <input type="text" id="modal-nome-produto" class="form-control form-control-sm" placeholder="Ex: X-Bacon Artesanal">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold">Preço Base (R$)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" id="modal-preco-produto" step="0.01" class="form-control" placeholder="0.00">
+                            <label class="form-label fw-bold">Senha Atual</label>
+                            <div class="input-group has-validation">
+                                <input type="password" id="sistemaAtual" class="form-control" placeholder="••••••••">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('sistemaAtual', this)"><i class="bi bi-eye"></i></button>
+                                <div class="invalid-feedback">Senha atual incorreta.</div>
                             </div>
                         </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-verde btn-sm w-100" onclick="salvarItemCardapio()">
-                                <i class="bi bi-plus-circle-fill"></i> Adicionar
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nova Senha</label>
+                            <div class="input-group">
+                                <input type="password" id="sistemaNova" class="form-control" placeholder="Digite a nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('sistemaNova', this)"><i class="bi bi-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Confirmar Nova Senha</label>
+                            <div class="input-group has-validation">
+                                <input type="password" id="sistemaConfirmar" class="form-control" placeholder="Repita a nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleSenha('sistemaConfirmar', this)"><i class="bi bi-eye"></i></button>
+                                <div class="invalid-feedback" id="sistemaFeedbackConfirm">As senhas não coincidem.</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-dark w-100 py-2" onclick="salvarSenhaSistema()">
+                            <i class="bi bi-key-fill text-warning me-1"></i> Atualizar Senha do Sistema
+                        </button>
+                    </div>
+
+                    <!-- SEÇÃO: RELATÓRIO -->
+                    <div class="painel-secao" id="secao-relatorio">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-file-earmark-bar-graph-fill text-success me-2"></i> Relatório de Vendas</h5>
+
+                        <div class="row g-2 mb-4 bg-light p-3 rounded border">
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Data Inicial</label>
+                                <input type="date" id="data-inicial" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Data Final</label>
+                                <input type="date" id="data-final" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-dark btn-sm w-100" onclick="carregarMetricasRelatorio()">
+                                    <i class="bi bi-filter"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-muted mb-3">Resultados do Período Filtrado:</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered align-middle text-center">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Item Mais Vendido</th>
+                                        <th>Total de Pedidos</th>
+                                        <th>Faturamento Bruto</th>
+                                        <th>Ticket Médio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong id="rep-mais-vendido">Nenhum</strong></td>
+                                        <td id="rep-total-pedidos">0</td>
+                                        <td class="text-success fw-bold" id="rep-faturamento">R$ 0,00</td>
+                                        <td id="rep-ticket">R$ 0,00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-end">
+                            <button class="btn btn-outline-dark btn-sm" onclick="imprimirRelatorioPDF()">
+                                <i class="bi bi-printer"></i> Imprimir PDF
                             </button>
                         </div>
                     </div>
 
-                    <h6 class="fw-bold text-muted mb-2">Itens Atuais no Sistema:</h6>
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                        <table class="table table-sm table-hover align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Preço</th>
-                                    <th class="text-center">Remover</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modal-tabela-cardapio-corpo">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <div class="modal fade" id="modalSenha" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- MODAL CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-lock-key text-primary"></i> Alterar Senha de Administrador</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Senha Atual</label>
-                        <input type="password" class="form-control" placeholder="••••••••">
+                <div class="modal-body text-center pt-4 pb-2">
+                    <i class="bi bi-trash3-fill text-danger fs-1 mb-3 d-block"></i>
+                    <p class="fw-bold mb-1">Remover item do cardápio?</p>
+                    <p class="text-muted small mb-4"><strong id="nomeItemExcluir"></strong> será removido permanentemente.</p>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-danger px-3" id="btnConfirmarExclusao">Remover</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nova Senha</label>
-                        <input type="password" class="form-control" placeholder="Digite a nova senha">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Confirme a Nova Senha</label>
-                        <input type="password" class="form-control" placeholder="Repita a nova senha">
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="atualizarSenhaAdmin()" data-bs-dismiss="modal">Atualizar Perfil</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalRelatorio" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-bar-graph text-success"></i> Relatório Consolidado de Vendas</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-2 mb-4 bg-light p-3 rounded border">
-                        <div class="col-md-5">
-                            <label class="form-label small fw-bold">Data Inicial</label>
-                            <input type="date" id="data-inicial" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-5">
-                            <label class="form-label small fw-bold">Data Final</label>
-                            <input type="date" id="data-final" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-dark btn-sm w-100" onclick="carregarMétricasRelatorio()"><i class="bi bi-filter"></i> Filtrar</button>
-                        </div>
-                    </div>
-
-                    <h6 class="fw-bold text-muted mb-3">Resultados do Período Filtrado:</h6>
-                    <div class="table-responsive mb-3">
-                        <table class="table table-sm table-bordered align-middle text-center">
-                            <thead class="table-secondary">
-                                <tr>
-                                    <th>Item Mais Vendido</th>
-                                    <th>Total de Pedidos</th>
-                                    <th>Faturamento Bruto</th>
-                                    <th>Ticket Médio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong id="rep-mais-vendido">Nenhum</strong></td>
-                                    <td id="rep-total-pedidos">0</td>
-                                    <td class="text-success fw-bold" id="rep-faturamento">R$ 0,00</td>
-                                    <td id="rep-ticket">R$ 0,00</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar Relatório</button>
-                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="imprimirRelatorioPDF()"><i class="bi bi-printer"></i> Imprimir PDF</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- TOAST -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
         <div id="toastAdmin" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -233,7 +285,28 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- INICIALIZAÇÃO DO BANCO DE DADOS LOCAL COMPARTILHADO ---
+
+        // ============================================================
+        //  NAVEGAÇÃO DO PAINEL
+        // ============================================================
+        function abrirSecao(secao, btnClicado) {
+            // Esconde todas as seções e remove ativo dos botões
+            document.querySelectorAll('.painel-secao').forEach(el => el.classList.remove('visivel'));
+            document.getElementById('secao-placeholder').style.display = 'none';
+            document.querySelectorAll('.btn-nav-admin').forEach(b => b.classList.remove('ativo'));
+
+            // Exibe a seção e marca o botão
+            document.getElementById('secao-' + secao).classList.add('visivel');
+            btnClicado.classList.add('ativo');
+
+            // Ações de inicialização por seção
+            if (secao === 'cardapio') renderizarTabelaCardapio();
+            if (secao === 'relatorio') { definirDatasFiltro(); carregarMetricasRelatorio(); }
+        }
+
+        // ============================================================
+        //  INICIALIZAÇÃO
+        // ============================================================
         const precosPadrao = {
             "X-Burger Clássico": 24.90,
             "X-Salada Especial": 26.90,
@@ -251,90 +324,39 @@
         ];
 
         window.onload = function() {
-            if (!localStorage.getItem('burguerflow_precos')) {
+            if (!localStorage.getItem('burguerflow_precos'))
                 localStorage.setItem('burguerflow_precos', JSON.stringify(precosPadrao));
-            }
-            if (!localStorage.getItem('burguerflow_cardapio')) {
+            if (!localStorage.getItem('burguerflow_cardapio'))
                 localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapioPadrao));
-            }
-            
-            definirDatasFiltro();
-            carregarPrecosInputs();
         };
 
-        function obterPrecos() {
-            return JSON.parse(localStorage.getItem('burguerflow_precos')) || precosPadrao;
-        }
-
-        function obterCardapio() {
-            return JSON.parse(localStorage.getItem('burguerflow_cardapio')) || cardapioPadrao;
-        }
-
-        // Carrega os valores numéricos salvos nos campos de alteração rápida da tela principal
-        function carregarPrecosInputs() {
-            const precos = obterPrecos();
-            if(precos["X-Burger Clássico"] !== undefined) document.getElementById('preco-burger').value = precos["X-Burger Clássico"].toFixed(2);
-            if(precos["X-Salada Especial"] !== undefined) document.getElementById('preco-salada').value = precos["X-Salada Especial"].toFixed(2);
-            if(precos["Batata Frita M"] !== undefined) document.getElementById('preco-batata').value = precos["Batata Frita M"].toFixed(2);
-        }
-
-        function definirDatasFiltro() {
-            const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('data-inicial').value = hoje;
-            document.getElementById('data-final').value = hoje;
-        }
+        function obterPrecos()  { return JSON.parse(localStorage.getItem('burguerflow_precos'))  || precosPadrao; }
+        function obterCardapio(){ return JSON.parse(localStorage.getItem('burguerflow_cardapio')) || cardapioPadrao; }
 
         function exibirToastAdmin(mensagem, iconeClass = "bi-check-circle-fill text-success") {
-            const iconeEl = document.getElementById('toastAdminIcone');
-            iconeEl.className = `bi ${iconeClass}`;
+            document.getElementById('toastAdminIcone').className = `bi ${iconeClass}`;
             document.getElementById('toastAdminMensagem').innerText = mensagem;
-            
-            const toastEl = document.getElementById('toastAdmin');
-            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
-            toast.show();
+            new bootstrap.Toast(document.getElementById('toastAdmin'), { delay: 3500 }).show();
         }
 
-        // --- SALVAR ALTERAÇÃO DE PREÇOS RÁPIDOS ---
-        function salvarPrecosRapidos() {
-            const precos = obterPrecos();
+        // ============================================================
+        //  CARDÁPIO
+        // ============================================================
+        function renderizarTabelaCardapio() {
             const cardapio = obterCardapio();
-            
-            precos["X-Burger Clássico"] = parseFloat(document.getElementById('preco-burger').value) || 0;
-            precos["X-Salada Especial"] = parseFloat(document.getElementById('preco-salada').value) || 0;
-            precos["Batata Frita M"] = parseFloat(document.getElementById('preco-batata').value) || 0;
-
-            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
-
-            // Atualiza também as strings legíveis do cardápio para sincronizar com o Garçom
-            const itensParaAtualizar = ["X-Burger Clássico", "X-Salada Especial", "Batata Frita M"];
-            itensParaAtualizar.forEach(nomeItem => {
-                const index = cardapio.findIndex(item => item.startsWith(nomeItem));
-                if (index !== -1) {
-                    cardapio[index] = `${nomeItem} - R$ ${precos[nomeItem].toFixed(2).replace('.', ',')}`;
-                }
-            });
-            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
-
-            exibirToastAdmin("Preços rápidos salvos e publicados no sistema!");
-        }
-
-        // --- RENDERIZAR ITENS DENTRO DA MODAL CARDÁPIO ---
-        function renderizarListaModalCardapio() {
-            const cardapio = obterCardapio();
-            const precos = obterPrecos();
-            const tabelaCorpo = document.getElementById('modal-tabela-cardapio-corpo');
-            tabelaCorpo.innerHTML = "";
+            const precos   = obterPrecos();
+            const tbody    = document.getElementById('tabela-cardapio-corpo');
+            tbody.innerHTML = "";
 
             if (cardapio.length === 0) {
-                tabelaCorpo.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Nenhum item no cardápio.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Nenhum item no cardápio.</td></tr>`;
                 return;
             }
 
             cardapio.forEach((item, index) => {
                 const nomeLimpo = item.split(" - ")[0].trim();
                 const preco = precos[nomeLimpo] || 0;
-
-                tabelaCorpo.innerHTML += `
+                tbody.innerHTML += `
                     <tr>
                         <td><strong>${nomeLimpo}</strong></td>
                         <td class="text-success fw-bold">R$ ${preco.toFixed(2).replace('.', ',')}</td>
@@ -343,17 +365,17 @@
                                 <i class="bi bi-trash3-fill"></i>
                             </button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
-        // --- MODAL: SALVAR E PUBLICAR NOVO ITEM ---
-        function salvarItemCardapio() {
-            const inputNome = document.getElementById('modal-nome-produto');
-            const inputPreco = document.getElementById('modal-preco-produto');
+        // Mantém compatibilidade com a chamada antiga do modal (não existe mais, mas deixamos seguro)
+        function renderizarListaModalCardapio() { renderizarTabelaCardapio(); }
 
-            const nome = inputNome.value.trim();
+        function salvarItemCardapio() {
+            const inputNome  = document.getElementById('modal-nome-produto');
+            const inputPreco = document.getElementById('modal-preco-produto');
+            const nome  = inputNome.value.trim();
             const preco = parseFloat(inputPreco.value);
 
             if (!nome || isNaN(preco)) {
@@ -362,57 +384,159 @@
             }
 
             const cardapio = obterCardapio();
-            const precos = obterPrecos();
+            const precos   = obterPrecos();
 
             if (precos[nome] !== undefined) {
                 exibirToastAdmin(`O item "${nome}" já existe!`, "bi-exclamation-triangle-fill text-danger");
                 return;
             }
 
-            // Injeta nas duas estruturas (legível para garçom e mapa numérico para o caixa)
             cardapio.push(`${nome} - R$ ${preco.toFixed(2).replace('.', ',')}`);
             precos[nome] = preco;
 
             localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
-            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
+            localStorage.setItem('burguerflow_precos',   JSON.stringify(precos));
 
-            // Reseta campos e atualiza modal e tela principal
-            inputNome.value = "";
+            inputNome.value  = "";
             inputPreco.value = "";
-            renderizarListaModalCardapio();
-            carregarPrecosInputs();
-
+            renderizarTabelaCardapio();
             exibirToastAdmin(`"${nome}" adicionado e publicado com sucesso!`, "bi-plus-circle-fill text-warning");
         }
 
-        // --- MODAL: REMOVER ITEM DO CARDÁPIO ---
+        // Variáveis para a confirmação de exclusão
+        let _indexParaExcluir = null;
+        let _nomeParaExcluir  = null;
+
         function removerItemCardapio(index, nomeLimpo) {
-            const cardapio = obterCardapio();
-            const precos = obterPrecos();
-
-            cardapio.splice(index, 1);
-            delete precos[nomeLimpo];
-
-            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
-            localStorage.setItem('burguerflow_precos', JSON.stringify(precos));
-
-            renderizarListaModalCardapio();
-            carregarPrecosInputs();
-            exibirToastAdmin(`"${nomeLimpo}" removido com sucesso.`);
+            _indexParaExcluir = index;
+            _nomeParaExcluir  = nomeLimpo;
+            document.getElementById('nomeItemExcluir').innerText = nomeLimpo;
+            new bootstrap.Modal(document.getElementById('modalConfirmarExclusao')).show();
         }
 
-        // --- CALCULAR RELATÓRIO DE VENDAS COMPLETO ---
-        function carregarMétricasRelatorio() {
-            const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
-            const dataInicial = document.getElementById('data-inicial').value;
-            const dataFinal = document.getElementById('data-final').value;
-            
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
+                bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
+
+                const cardapio = obterCardapio();
+                const precos   = obterPrecos();
+
+                cardapio.splice(_indexParaExcluir, 1);
+                delete precos[_nomeParaExcluir];
+
+                localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
+                localStorage.setItem('burguerflow_precos',   JSON.stringify(precos));
+
+                renderizarTabelaCardapio();
+                exibirToastAdmin(`"${_nomeParaExcluir}" removido com sucesso.`);
+
+                _indexParaExcluir = null;
+                _nomeParaExcluir  = null;
+            });
+        });
+
+        // ============================================================
+        //  UTILITÁRIO: TOGGLE VER/OCULTAR SENHA
+        // ============================================================
+        function toggleSenha(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon  = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+
+        // ============================================================
+        //  SENHA DO ADMINISTRADOR
+        // ============================================================
+        function salvarSenhaAdmin() {
+            const CHAVE  = 'burguerflow_senha_admin';
+            const PADRAO = '1234';
+
+            const atual     = document.getElementById('adminAtual').value;
+            const nova      = document.getElementById('adminNova').value.trim();
+            const confirmar = document.getElementById('adminConfirmar').value;
+            const salva     = localStorage.getItem(CHAVE) || PADRAO;
+
+            ['adminAtual','adminConfirmar'].forEach(id => document.getElementById(id).classList.remove('is-invalid'));
+
+            if (atual !== salva) {
+                document.getElementById('adminAtual').classList.add('is-invalid');
+                return;
+            }
+            if (nova.length < 4) {
+                document.getElementById('adminConfirmar').classList.add('is-invalid');
+                document.getElementById('adminFeedbackConfirm').innerText = 'A senha deve ter no mínimo 4 caracteres.';
+                return;
+            }
+            if (nova !== confirmar) {
+                document.getElementById('adminConfirmar').classList.add('is-invalid');
+                document.getElementById('adminFeedbackConfirm').innerText = 'As senhas não coincidem.';
+                return;
+            }
+
+            localStorage.setItem(CHAVE, nova);
+            ['adminAtual','adminNova','adminConfirmar'].forEach(id => document.getElementById(id).value = '');
+            exibirToastAdmin("Senha do administrador atualizada com sucesso!", "bi-shield-check text-primary");
+        }
+
+        // ============================================================
+        //  SENHA DO SISTEMA
+        // ============================================================
+        function salvarSenhaSistema() {
+            const CHAVE  = 'burguerflow_senha_sistema';
+            const PADRAO = '1234';
+
+            const atual     = document.getElementById('sistemaAtual').value;
+            const nova      = document.getElementById('sistemaNova').value.trim();
+            const confirmar = document.getElementById('sistemaConfirmar').value;
+            const salva     = localStorage.getItem(CHAVE) || PADRAO;
+
+            ['sistemaAtual','sistemaConfirmar'].forEach(id => document.getElementById(id).classList.remove('is-invalid'));
+
+            if (atual !== salva) {
+                document.getElementById('sistemaAtual').classList.add('is-invalid');
+                return;
+            }
+            if (nova.length < 4) {
+                document.getElementById('sistemaConfirmar').classList.add('is-invalid');
+                document.getElementById('sistemaFeedbackConfirm').innerText = 'A senha deve ter no mínimo 4 caracteres.';
+                return;
+            }
+            if (nova !== confirmar) {
+                document.getElementById('sistemaConfirmar').classList.add('is-invalid');
+                document.getElementById('sistemaFeedbackConfirm').innerText = 'As senhas não coincidem.';
+                return;
+            }
+
+            localStorage.setItem(CHAVE, nova);
+            ['sistemaAtual','sistemaNova','sistemaConfirmar'].forEach(id => document.getElementById(id).value = '');
+            exibirToastAdmin("Senha do sistema atualizada com sucesso!", "bi-shield-check text-warning");
+        }
+
+        // ============================================================
+        //  RELATÓRIO
+        // ============================================================
+        function definirDatasFiltro() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data-inicial').value = hoje;
+            document.getElementById('data-final').value   = hoje;
+        }
+
+        function carregarMetricasRelatorio() {
+            const historico    = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+            const dataInicial  = document.getElementById('data-inicial').value;
+            const dataFinal    = document.getElementById('data-final').value;
+
             let faturamentoTotal = 0;
-            let totalPedidos = 0;
+            let totalPedidos     = 0;
             let contagemProdutos = {};
 
             historico.forEach(venda => {
-                // Filtro por data integrado
                 if (venda.data >= dataInicial && venda.data <= dataFinal) {
                     totalPedidos++;
                     faturamentoTotal += venda.valorTotal;
@@ -424,39 +548,27 @@
             });
 
             let maisVendido = "Nenhum";
-            let maxVendas = 0;
+            let maxVendas   = 0;
             Object.keys(contagemProdutos).forEach(prod => {
                 if (contagemProdutos[prod] > maxVendas) {
-                    maxVendas = contagemProdutos[prod];
+                    maxVendas   = contagemProdutos[prod];
                     maisVendido = `${prod} (${maxVendas} un)`;
                 }
             });
 
             let ticketMedio = totalPedidos > 0 ? (faturamentoTotal / totalPedidos) : 0;
 
-            document.getElementById('rep-mais-vendido').innerText = maisVendido;
+            document.getElementById('rep-mais-vendido').innerText  = maisVendido;
             document.getElementById('rep-total-pedidos').innerText = `${totalPedidos} comandas`;
-            document.getElementById('rep-faturamento').innerText = `R$ ${faturamentoTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('rep-ticket').innerText = `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
+            document.getElementById('rep-faturamento').innerText   = `R$ ${faturamentoTotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('rep-ticket').innerText        = `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
         }
 
-        function salvarNovaSenhaMaster() {
-            const novaSenha = document.getElementById('novaSenhaMaster').value;
-            if (novaSenha.trim() !== "") {
-                exibirToastAdmin("Senha Master redefinida com sucesso!", "bi-shield-check text-warning");
-                document.getElementById('novaSenhaMaster').value = "";
-            } else {
-                exibirToastAdmin("Digite uma senha válida.", "bi-exclamation-triangle-fill text-danger");
-            }
-        }
+        // Alias para compatibilidade
+        function carregarMétricasRelatorio() { carregarMetricasRelatorio(); }
 
-        function atualizarSenhaAdmin() {
-            exibirToastAdmin("Senha administrativa atualizada!", "bi-shield-check text-primary");
-        }
+        function imprimirRelatorioPDF() { window.print(); }
 
-        function imprimirRelatorioPDF() {
-            window.print();
-        }
     </script>
 </body>
 </html>

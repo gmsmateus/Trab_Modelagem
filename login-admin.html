@@ -30,12 +30,18 @@
                     <i class="bi bi-shield-lock-fill text-secondary"></i>
                 </div>
                 <h4 class="fw-bold m-0">Acesso Restrito</h4>
-                <p class="text-muted small mt-1">Clique em confirmar para acessar o painel (senha opcional).</p>
+                <p class="text-muted small mt-1">Digite a senha de gerência para acessar o painel administrativo.</p>
             </div>
             
             <div class="mb-4 text-start">
                 <label class="form-label small fw-bold">Senha de Gerência</label>
-                <input type="password" id="senhaInput" class="form-control text-center py-2" placeholder="••••••••" autofocus>
+                <div class="input-group has-validation">
+                    <input type="password" id="senhaInput" class="form-control text-center py-2" placeholder="••••••••" autofocus>
+                    <button class="btn btn-outline-secondary" type="button" id="btnToggleAdmin" onclick="toggleVerSenha()">
+                        <i class="bi bi-eye" id="iconeToggleAdmin"></i>
+                    </button>
+                    <div id="feedbackAdmin" class="invalid-feedback">Senha incorreta. Tente novamente.</div>
+                </div>
             </div>
 
             <div class="d-grid gap-2">
@@ -50,14 +56,39 @@
     </div>
 
     <script>
+        const SENHA_PADRAO = "1234";
         const senhaInput = document.getElementById('senhaInput');
+        const feedbackEl = document.getElementById('feedbackAdmin');
 
-        function autenticarEEntrar() {
-            // Entra direto sem validar se o campo está vazio ou preenchido
-            window.location.href = "admin.html";
+        function toggleVerSenha() {
+            const input = document.getElementById('senhaInput');
+            const icon = document.getElementById('iconeToggleAdmin');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
         }
 
-        // Atalho para o botão Enter (funciona mesmo com o campo vazio)
+        function autenticarEEntrar() {
+            const senhaDigitada = senhaInput.value;
+            const senhaSalva = localStorage.getItem('burguerflow_senha_admin') || SENHA_PADRAO;
+
+            if (senhaDigitada === senhaSalva) {
+                window.location.href = "admin.html";
+            } else {
+                senhaInput.classList.add('is-invalid');
+                senhaInput.value = "";
+                senhaInput.focus();
+            }
+        }
+
+        senhaInput.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+
         senhaInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') autenticarEEntrar();
         });
