@@ -44,6 +44,26 @@
             min-height: 380px;
             color: #adb5bd;
         }
+
+        @media print {
+            /* Esconde tudo da página */
+            body * { visibility: hidden; }
+            /* Mostra só o conteúdo do relatório */
+            #secao-relatorio, #secao-relatorio * { visibility: visible; }
+            #secao-relatorio {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%;
+                padding: 24px;
+            }
+            /* Remove scroll e sombra */
+            #painel-conteudo {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            /* Esconde botões na impressão */
+            #secao-relatorio button { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -84,7 +104,7 @@
 
             <!-- ========== PAINEL DE CONTEÚDO DINÂMICO ========== -->
             <div class="col-md-8 col-lg-9">
-                <div class="card card-sistema p-4 shadow-sm" id="painel-conteudo">
+                <div class="card card-sistema p-4 shadow-sm" id="painel-conteudo" style="max-height: calc(100vh - 130px); overflow-y: auto;">
 
                     <!-- PLACEHOLDER INICIAL -->
                     <div class="painel-placeholder visivel" id="secao-placeholder">
@@ -210,40 +230,125 @@
                     <div class="painel-secao" id="secao-relatorio">
                         <h5 class="fw-bold mb-4"><i class="bi bi-file-earmark-bar-graph-fill text-success me-2"></i> Relatório de Vendas</h5>
 
-                        <div class="row g-2 mb-4 bg-light p-3 rounded border">
-                            <div class="col-md-5">
+                        <!-- FILTRO DE DATA -->
+                        <div class="row g-2 mb-4 bg-light p-3 rounded border align-items-end">
+                            <div class="col-md-4">
                                 <label class="form-label small fw-bold">Data Inicial</label>
-                                <input type="date" id="data-inicial" class="form-control form-control-sm">
+                                <input type="date" id="data-inicial" class="form-control form-control-sm"
+                                    onchange="sincronizarDatas()">
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-4">
                                 <label class="form-label small fw-bold">Data Final</label>
-                                <input type="date" id="data-final" class="form-control form-control-sm">
+                                <input type="date" id="data-final" class="form-control form-control-sm"
+                                    onchange="sincronizarDatas()">
                             </div>
-                            <div class="col-md-2 d-flex align-items-end">
+                            <div class="col-md-2">
                                 <button class="btn btn-dark btn-sm w-100" onclick="carregarMetricasRelatorio()">
                                     <i class="bi bi-filter"></i> Filtrar
                                 </button>
                             </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary btn-sm w-100" onclick="imprimirRelatorioPDF()">
+                                    <i class="bi bi-printer"></i> Imprimir
+                                </button>
+                            </div>
                         </div>
 
-                        <h6 class="fw-bold text-muted mb-3">Resultados do Período Filtrado:</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered align-middle text-center">
-                                <thead class="table-secondary">
-                                    <tr>
-                                        <th>Item Mais Vendido</th>
-                                        <th>Total de Pedidos</th>
-                                        <th>Faturamento Bruto</th>
-                                        <th>Ticket Médio</th>
-                                    </tr>
+                        <!-- CARDS DE RESUMO -->
+                        <div class="row g-3 mb-4" id="rep-cards-resumo">
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 bg-success bg-opacity-10 rounded-3 p-3 text-center h-100">
+                                    <div class="text-success fw-bold fs-4 mb-1" id="rep-faturamento">R$ 0,00</div>
+                                    <div class="small text-muted">Faturamento Bruto</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 bg-primary bg-opacity-10 rounded-3 p-3 text-center h-100">
+                                    <div class="text-primary fw-bold fs-4 mb-1" id="rep-total-pedidos">0</div>
+                                    <div class="small text-muted">Comandas Fechadas</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 bg-warning bg-opacity-10 rounded-3 p-3 text-center h-100">
+                                    <div class="text-warning fw-bold fs-4 mb-1" id="rep-ticket">R$ 0,00</div>
+                                    <div class="small text-muted">Ticket Médio</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 bg-dark bg-opacity-10 rounded-3 p-3 text-center h-100">
+                                    <div class="fw-bold fs-4 mb-1" id="rep-total-itens">0</div>
+                                    <div class="small text-muted">Itens Vendidos</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <!-- FORMAS DE PAGAMENTO -->
+                            <div class="col-md-5">
+                                <h6 class="fw-bold text-muted mb-2">Formas de Pagamento</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered align-middle text-center">
+                                        <thead class="table-secondary">
+                                            <tr><th>Forma</th><th>Qtd</th><th>Total</th></tr>
+                                        </thead>
+                                        <tbody id="rep-tabela-pagamento">
+                                            <tr><td colspan="3" class="text-muted small">Sem dados</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- RECEITA POR CATEGORIA -->
+                            <div class="col-md-7">
+                                <h6 class="fw-bold text-muted mb-2">Receita por Categoria</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered align-middle text-center">
+                                        <thead class="table-secondary">
+                                            <tr><th>Categoria</th><th>Itens</th><th>Receita</th><th>% do Total</th></tr>
+                                        </thead>
+                                        <tbody id="rep-tabela-categoria">
+                                            <tr><td colspan="4" class="text-muted small">Sem dados</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TOP 5 MAIS VENDIDOS -->
+                        <h6 class="fw-bold text-muted mb-2">Top 5 Itens Mais Vendidos</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr><th>#</th><th>Produto</th><th class="text-center">Qtd Vendida</th><th class="text-end">Receita</th></tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><strong id="rep-mais-vendido">Nenhum</strong></td>
-                                        <td id="rep-total-pedidos">0</td>
-                                        <td class="text-success fw-bold" id="rep-faturamento">R$ 0,00</td>
-                                        <td id="rep-ticket">R$ 0,00</td>
-                                    </tr>
+                                <tbody id="rep-tabela-top5">
+                                    <tr><td colspan="4" class="text-center text-muted small py-3">Sem dados no período</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ITENS MENOS VENDIDOS -->
+                        <h6 class="fw-bold text-muted mb-2">Itens Menos Vendidos <span class="text-muted fw-normal small">(candidatos a revisão no cardápio)</span></h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-secondary">
+                                    <tr><th>Produto</th><th class="text-center">Qtd Vendida</th><th class="text-end">Receita</th></tr>
+                                </thead>
+                                <tbody id="rep-tabela-menos-vendidos">
+                                    <tr><td colspan="3" class="text-center text-muted small py-3">Sem dados no período</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- HISTÓRICO DE COMANDAS -->
+                        <h6 class="fw-bold text-muted mb-2">Histórico de Comandas</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr><th>Data</th><th>Mesa</th><th>Itens</th><th>Pagamento</th><th class="text-end">Total</th><th class="text-center">Detalhes</th></tr>
+                                </thead>
+                                <tbody id="rep-tabela-historico">
+                                    <tr><td colspan="6" class="text-center text-muted small py-3">Sem comandas no período</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -660,45 +765,196 @@
         // ============================================================
         function definirDatasFiltro() {
             const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('data-inicial').value = hoje;
-            document.getElementById('data-final').value   = hoje;
+            const ini  = document.getElementById('data-inicial');
+            const fim  = document.getElementById('data-final');
+            ini.value = hoje;
+            ini.max   = hoje;
+            fim.value = hoje;
+            fim.max   = hoje;
+            fim.min   = hoje;
         }
 
+        // Garante que data-final nunca fique antes de data-inicial nem depois de hoje
+        function sincronizarDatas() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const ini  = document.getElementById('data-inicial');
+            const fim  = document.getElementById('data-final');
+
+            // Impede data inicial futura
+            if (ini.value > hoje) ini.value = hoje;
+
+            // Atualiza limites do campo final
+            fim.min = ini.value;
+            fim.max = hoje;
+
+            // Corrige data final se ficou inválida
+            if (fim.value < ini.value) fim.value = ini.value;
+            if (fim.value > hoje)      fim.value = hoje;
+        }
+
+        function fmt(val) { return `R$ ${val.toFixed(2).replace('.', ',')}`; }
+
         function carregarMetricasRelatorio() {
-            const historico    = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
-            const dataInicial  = document.getElementById('data-inicial').value;
-            const dataFinal    = document.getElementById('data-final').value;
+            const dataInicial = document.getElementById('data-inicial').value;
+            const dataFinal   = document.getElementById('data-final').value;
 
-            let faturamentoTotal = 0;
-            let totalPedidos     = 0;
-            let contagemProdutos = {};
+            if (!dataInicial || !dataFinal) {
+                exibirToastAdmin("Preencha as duas datas antes de filtrar.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+            if (dataInicial > dataFinal) {
+                exibirToastAdmin("A data inicial não pode ser depois da data final.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
 
-            historico.forEach(venda => {
-                if (venda.data >= dataInicial && venda.data <= dataFinal) {
-                    totalPedidos++;
-                    faturamentoTotal += venda.valorTotal;
-                    venda.itens.forEach(item => {
-                        let nomeLimpo = item.produto.split(" - ")[0].trim();
-                        contagemProdutos[nomeLimpo] = (contagemProdutos[nomeLimpo] || 0) + 1;
-                    });
-                }
+            const historico  = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+            const categorias = obterCategorias();
+            const precos     = obterPrecos();
+
+            // Filtra pelo período
+            const vendas = historico.filter(v => v.data >= dataInicial && v.data <= dataFinal);
+
+            // ── Métricas base ──
+            let faturamento     = 0;
+            let totalItens      = 0;
+            let contagemProd    = {};   // { nome: { qtd, receita, categoria } }
+            let contagemPagto   = {};   // { forma: { qtd, total } }
+
+            vendas.forEach(v => {
+                faturamento += v.valorTotal;
+
+                // Pagamento
+                const forma = v.formaPagamento || "Não informado";
+                if (!contagemPagto[forma]) contagemPagto[forma] = { qtd: 0, total: 0 };
+                contagemPagto[forma].qtd++;
+                contagemPagto[forma].total += v.valorTotal;
+
+                // Itens
+                (v.itens || []).forEach(item => {
+                    const nome  = item.produto.split(" - ")[0].trim();
+                    const preco = precos[nome] || 0;
+                    const cat   = categorias[nome] || item.categoria || "cozinha";
+                    if (!contagemProd[nome]) contagemProd[nome] = { qtd: 0, receita: 0, categoria: cat };
+                    contagemProd[nome].qtd++;
+                    contagemProd[nome].receita += preco;
+                    totalItens++;
+                });
             });
 
-            let maisVendido = "Nenhum";
-            let maxVendas   = 0;
-            Object.keys(contagemProdutos).forEach(prod => {
-                if (contagemProdutos[prod] > maxVendas) {
-                    maxVendas   = contagemProdutos[prod];
-                    maisVendido = `${prod} (${maxVendas} un)`;
-                }
+            const totalPedidos = vendas.length;
+            const ticketMedio  = totalPedidos > 0 ? faturamento / totalPedidos : 0;
+
+            // ── Cards de resumo ──
+            document.getElementById('rep-faturamento').innerText   = fmt(faturamento);
+            document.getElementById('rep-total-pedidos').innerText = `${totalPedidos}`;
+            document.getElementById('rep-ticket').innerText        = fmt(ticketMedio);
+            document.getElementById('rep-total-itens').innerText   = `${totalItens}`;
+
+            // ── Formas de pagamento ──
+            const tblPagto = document.getElementById('rep-tabela-pagamento');
+            if (Object.keys(contagemPagto).length === 0) {
+                tblPagto.innerHTML = `<tr><td colspan="3" class="text-muted small">Sem dados</td></tr>`;
+            } else {
+                tblPagto.innerHTML = Object.entries(contagemPagto)
+                    .sort((a, b) => b[1].total - a[1].total)
+                    .map(([forma, d]) => `
+                        <tr>
+                            <td class="text-start">${forma}</td>
+                            <td>${d.qtd}</td>
+                            <td class="text-success fw-bold">${fmt(d.total)}</td>
+                        </tr>`).join('');
+            }
+
+            // ── Receita por categoria ──
+            const receitaCat = { cozinha: { qtd: 0, receita: 0 }, balcao: { qtd: 0, receita: 0 } };
+            Object.values(contagemProd).forEach(p => {
+                const c = p.categoria === "balcao" ? "balcao" : "cozinha";
+                receitaCat[c].qtd     += p.qtd;
+                receitaCat[c].receita += p.receita;
             });
+            const tblCat = document.getElementById('rep-tabela-categoria');
+            if (totalItens === 0) {
+                tblCat.innerHTML = `<tr><td colspan="4" class="text-muted small">Sem dados</td></tr>`;
+            } else {
+                tblCat.innerHTML = [
+                    { label: "🍳 Cozinha", key: "cozinha" },
+                    { label: "🧃 Balcão",  key: "balcao"  }
+                ].map(({ label, key }) => {
+                    const d   = receitaCat[key];
+                    const pct = faturamento > 0 ? ((d.receita / faturamento) * 100).toFixed(1) : "0.0";
+                    return `<tr>
+                        <td class="text-start">${label}</td>
+                        <td>${d.qtd}</td>
+                        <td class="text-success fw-bold">${fmt(d.receita)}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:8px">
+                                    <div class="progress-bar bg-success" style="width:${pct}%"></div>
+                                </div>
+                                <span class="small">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
 
-            let ticketMedio = totalPedidos > 0 ? (faturamentoTotal / totalPedidos) : 0;
+            // ── Top 5 mais vendidos ──
+            const ranking = Object.entries(contagemProd).sort((a, b) => b[1].qtd - a[1].qtd);
+            const tblTop5 = document.getElementById('rep-tabela-top5');
+            if (ranking.length === 0) {
+                tblTop5.innerHTML = `<tr><td colspan="4" class="text-center text-muted small py-3">Sem dados no período</td></tr>`;
+            } else {
+                const medalhas = ['🥇','🥈','🥉'];
+                tblTop5.innerHTML = ranking.slice(0, 5).map(([nome, d], i) => `
+                    <tr>
+                        <td class="text-center fw-bold">${medalhas[i] || i + 1}</td>
+                        <td>${nome}</td>
+                        <td class="text-center">${d.qtd} un</td>
+                        <td class="text-end text-success fw-bold">${fmt(d.receita)}</td>
+                    </tr>`).join('');
+            }
 
-            document.getElementById('rep-mais-vendido').innerText  = maisVendido;
-            document.getElementById('rep-total-pedidos').innerText = `${totalPedidos} comandas`;
-            document.getElementById('rep-faturamento').innerText   = `R$ ${faturamentoTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('rep-ticket').innerText        = `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
+            // ── Menos vendidos (bottom 3, só os que aparecem no histórico) ──
+            const tblMenos = document.getElementById('rep-tabela-menos-vendidos');
+            if (ranking.length === 0) {
+                tblMenos.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Sem dados no período</td></tr>`;
+            } else {
+                tblMenos.innerHTML = ranking.slice(-3).reverse().map(([nome, d]) => `
+                    <tr>
+                        <td>${nome}</td>
+                        <td class="text-center text-danger">${d.qtd} un</td>
+                        <td class="text-end">${fmt(d.receita)}</td>
+                    </tr>`).join('');
+            }
+
+            // ── Histórico de comandas ──
+            const tblHist = document.getElementById('rep-tabela-historico');
+            if (vendas.length === 0) {
+                tblHist.innerHTML = `<tr><td colspan="6" class="text-center text-muted small py-3">Sem comandas no período</td></tr>`;
+            } else {
+                tblHist.innerHTML = [...vendas].reverse().map((v, i) => {
+                    const nomesItens = (v.itens || []).map(it => it.produto.split(" - ")[0]).join(', ');
+                    const idCollapse = `comanda-${i}`;
+                    return `
+                        <tr>
+                            <td>${v.data}</td>
+                            <td><strong>Mesa ${v.mesa}</strong></td>
+                            <td class="text-muted small" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nomesItens}</td>
+                            <td>${v.formaPagamento || '—'}</td>
+                            <td class="text-end text-success fw-bold">${fmt(v.valorTotal)}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#${idCollapse}">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="collapse" id="${idCollapse}">
+                            <td colspan="6" class="bg-light small px-4 py-2">
+                                <strong>Itens:</strong> ${nomesItens || '—'}
+                            </td>
+                        </tr>`;
+                }).join('');
+            }
         }
 
         // Alias para compatibilidade
