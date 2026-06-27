@@ -212,19 +212,29 @@
                         let badgeStatus = "";
                         let textDecoration = "text-dark";
                         let botaoEntregue = "";
+                        let botaoCancelar = "";
 
                         if (item.status === "Rascunho") {
-                            badgeStatus = `<span class="badge bg-secondary me-2"><i class="bi bi-clock"></i> A enviar</span>`;
+                            badgeStatus  = `<span class="badge bg-secondary me-2"><i class="bi bi-clock"></i> A enviar</span>`;
+                            botaoCancelar = `<button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Cancelar item"><i class="bi bi-x-lg"></i></button>`;
                         } else if (item.status === "Pendente") {
-                            badgeStatus = `<span class="badge bg-warning text-dark me-2">Na fila da cozinha</span>`;
+                            badgeStatus  = `<span class="badge bg-warning text-dark me-2">Na fila da cozinha</span>`;
+                            botaoCancelar = `<button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Cancelar item"><i class="bi bi-x-lg"></i></button>`;
                         } else if (item.status === "Em preparo") {
                             badgeStatus = `<span class="badge bg-primary me-2">Em preparo</span>`;
-                            botaoEntregue = `<button onclick="marcarItemEntregue(${index})" class="btn btn-sm btn-outline-success" title="Marcar como entregue na mesa"><i class="bi bi-check-lg"></i></button>`;
+                        } else if (item.status === "Pronto") {
+                            const cat = item.categoria || "cozinha";
+                            // Balcão: visual de "Pendente" mas já pode entregar
+                            // Cozinha: visual de "Pronto!" sinalizando que a cozinha finalizou
+                            badgeStatus   = cat === "balcao"
+                                ? `<span class="badge bg-warning text-dark me-2">Pendente</span>`
+                                : `<span class="badge bg-success me-2"><i class="bi bi-bell-fill"></i> Pronto!</span>`;
+                            botaoEntregue = `<button onclick="marcarItemEntregue(${index})" class="btn btn-sm btn-success" title="Confirmar entrega na mesa"><i class="bi bi-check-lg"></i> Entregar</button>`;
                         } else if (item.status === "Entregue") {
-                            badgeStatus = `<span class="badge bg-success me-2"><i class="bi bi-check2-all"></i> Entregue</span>`;
-                            textDecoration = 'text-decoration-underline text-muted';
+                            badgeStatus    = `<span class="badge bg-secondary me-2"><i class="bi bi-check2-all"></i> Entregue</span>`;
+                            textDecoration = 'text-decoration-line-through text-muted';
                         }
-                        
+
                         const obsHTML = item.obs ? `<br><small class="text-muted">Obs: ${item.obs}</small>` : '';
 
                         itensHTML += `
@@ -236,7 +246,7 @@
                                 </div>
                                 <div class="btn-group">
                                     ${botaoEntregue}
-                                    <button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Remover item"><i class="bi bi-x-lg"></i></button>
+                                    ${botaoCancelar}
                                 </div>
                             </div>
                         `;
@@ -295,22 +305,27 @@
             if(txtObs) txtObs.value = "";
         }
 
-        // --- DISPARA OS ITENS DO RASCUNHO PARA A COZINHA ---
+        // --- DISPARA OS ITENS DO RASCUNHO CONFORME CATEGORIA ---
         function enviarPedidoParaCozinha() {
             if (!mesaAtualSelecionada) return;
-            const dados = obterDadosMesas();
-            
+            const dados      = obterDadosMesas();
+            const categorias = JSON.parse(localStorage.getItem('burguerflow_categorias')) || {};
+
             let enviouAlgo = false;
             dados[mesaAtualSelecionada].itens.forEach(item => {
                 if (item.status === "Rascunho") {
-                    item.status = "Pendente";
-                    enviouAlgo = true;
+                    const nomeLimpo  = item.produto.split(" - ")[0].trim();
+                    const categoria  = categorias[nomeLimpo] || "cozinha";
+                    // Balcão: já sai pronto. Cozinha: vai para a fila.
+                    item.status      = categoria === "balcao" ? "Pronto" : "Pendente";
+                    item.categoria   = categoria;
+                    enviouAlgo       = true;
                 }
             });
 
             if (enviouAlgo) {
                 salvarDadosMesas(dados);
-                exibirToast("Pedido enviado com sucesso para a cozinha! 🍔🔥");
+                exibirToast("Pedido enviado! Itens de balcão já estão prontos para entrega. 🧃🍔🔥");
             } else {
                 exibirToast("Não há novos itens para enviar.");
             }
@@ -357,6 +372,8 @@
         window.onload = function() {
             renderizarMapaMesas();
             carregarProdutosNoSelect();
+            // Seleciona a mesa 01 por padrão ao abrir a tela
+            verMesa("01");
         };
 
         // Escuta alterações vindas do Admin/Cozinha/Caixa e atualiza tudo em tempo real

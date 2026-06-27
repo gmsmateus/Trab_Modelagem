@@ -99,18 +99,25 @@
 
                         <div class="row g-2 mb-4 p-3 bg-light rounded border">
                             <h6 class="fw-bold text-muted mb-2">Cadastrar Novo Item:</h6>
-                            <div class="col-md-5">
+                            <div class="col-md-4">
                                 <label class="form-label small fw-bold">Nome do Produto</label>
                                 <input type="text" id="modal-nome-produto" class="form-control form-control-sm" placeholder="Ex: X-Bacon Artesanal">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label small fw-bold">Preço Base (R$)</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">R$</span>
                                     <input type="number" id="modal-preco-produto" step="0.01" class="form-control" placeholder="0.00">
                                 </div>
                             </div>
-                            <div class="col-md-3 d-flex align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Categoria</label>
+                                <select id="modal-categoria-produto" class="form-select form-select-sm">
+                                    <option value="cozinha">🍳 Cozinha</option>
+                                    <option value="balcao">🧃 Balcão</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
                                 <button type="button" class="btn btn-verde btn-sm w-100" onclick="salvarItemCardapio()">
                                     <i class="bi bi-plus-circle-fill"></i> Adicionar
                                 </button>
@@ -123,8 +130,9 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Item</th>
+                                        <th>Categoria</th>
                                         <th>Preço</th>
-                                        <th class="text-center">Remover</th>
+                                        <th class="text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabela-cardapio-corpo"></tbody>
@@ -253,6 +261,46 @@
         </div>
     </div>
 
+    <!-- MODAL EDIÇÃO DE ITEM -->
+    <div class="modal fade" id="modalEditarItem" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-sistema">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-fill text-primary me-2"></i> Editar Item do Cardápio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-index-original">
+                    <input type="hidden" id="edit-nome-original">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nome do Produto</label>
+                        <input type="text" id="edit-nome" class="form-control" placeholder="Nome do produto">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Preço (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" id="edit-preco" step="0.01" class="form-control" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Categoria</label>
+                        <select id="edit-categoria" class="form-select">
+                            <option value="cozinha">🍳 Cozinha</option>
+                            <option value="balcao">🧃 Balcão</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm px-3" id="btnSalvarEdicao">
+                        <i class="bi bi-check-lg"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CONFIRMAÇÃO DE EXCLUSÃO -->
     <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -315,6 +363,14 @@
             "Suco Natural": 8.00
         };
 
+        const categoriasPadrao = {
+            "X-Burger Clássico": "cozinha",
+            "X-Salada Especial": "cozinha",
+            "Batata Frita M":    "cozinha",
+            "Coca-Cola 350ml":   "balcao",
+            "Suco Natural":      "cozinha"
+        };
+
         const cardapioPadrao = [
             "X-Burger Clássico - R$ 24,90",
             "X-Salada Especial - R$ 26,90",
@@ -328,10 +384,13 @@
                 localStorage.setItem('burguerflow_precos', JSON.stringify(precosPadrao));
             if (!localStorage.getItem('burguerflow_cardapio'))
                 localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapioPadrao));
+            if (!localStorage.getItem('burguerflow_categorias'))
+                localStorage.setItem('burguerflow_categorias', JSON.stringify(categoriasPadrao));
         };
 
-        function obterPrecos()  { return JSON.parse(localStorage.getItem('burguerflow_precos'))  || precosPadrao; }
-        function obterCardapio(){ return JSON.parse(localStorage.getItem('burguerflow_cardapio')) || cardapioPadrao; }
+        function obterPrecos()     { return JSON.parse(localStorage.getItem('burguerflow_precos'))     || precosPadrao; }
+        function obterCardapio()   { return JSON.parse(localStorage.getItem('burguerflow_cardapio'))   || cardapioPadrao; }
+        function obterCategorias() { return JSON.parse(localStorage.getItem('burguerflow_categorias')) || categoriasPadrao; }
 
         function exibirToastAdmin(mensagem, iconeClass = "bi-check-circle-fill text-success") {
             document.getElementById('toastAdminIcone').className = `bi ${iconeClass}`;
@@ -343,25 +402,34 @@
         //  CARDÁPIO
         // ============================================================
         function renderizarTabelaCardapio() {
-            const cardapio = obterCardapio();
-            const precos   = obterPrecos();
-            const tbody    = document.getElementById('tabela-cardapio-corpo');
-            tbody.innerHTML = "";
+            const cardapio   = obterCardapio();
+            const precos     = obterPrecos();
+            const categorias = obterCategorias();
+            const tbody      = document.getElementById('tabela-cardapio-corpo');
+            tbody.innerHTML  = "";
 
             if (cardapio.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Nenhum item no cardápio.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted small py-3">Nenhum item no cardápio.</td></tr>`;
                 return;
             }
 
             cardapio.forEach((item, index) => {
                 const nomeLimpo = item.split(" - ")[0].trim();
-                const preco = precos[nomeLimpo] || 0;
+                const preco     = precos[nomeLimpo] || 0;
+                const cat       = categorias[nomeLimpo] || "cozinha";
+                const badgeCat  = cat === "balcao"
+                    ? `<span class="badge bg-info text-dark">🧃 Balcão</span>`
+                    : `<span class="badge bg-warning text-dark">🍳 Cozinha</span>`;
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${nomeLimpo}</strong></td>
+                        <td>${badgeCat}</td>
                         <td class="text-success fw-bold">R$ ${preco.toFixed(2).replace('.', ',')}</td>
                         <td class="text-center">
-                            <button onclick="removerItemCardapio(${index}, '${nomeLimpo}')" class="btn btn-sm btn-link text-danger p-0">
+                            <button onclick="abrirEdicaoItem(${index}, '${nomeLimpo}')" class="btn btn-sm btn-link text-primary p-0 me-2" title="Editar item">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button onclick="removerItemCardapio(${index}, '${nomeLimpo}')" class="btn btn-sm btn-link text-danger p-0" title="Remover item">
                                 <i class="bi bi-trash3-fill"></i>
                             </button>
                         </td>
@@ -372,19 +440,82 @@
         // Mantém compatibilidade com a chamada antiga do modal (não existe mais, mas deixamos seguro)
         function renderizarListaModalCardapio() { renderizarTabelaCardapio(); }
 
+        // ============================================================
+        //  EDIÇÃO DE ITEM DO CARDÁPIO
+        // ============================================================
+        function abrirEdicaoItem(index, nomeLimpo) {
+            const precos     = obterPrecos();
+            const categorias = obterCategorias();
+
+            document.getElementById('edit-index-original').value  = index;
+            document.getElementById('edit-nome-original').value   = nomeLimpo;
+            document.getElementById('edit-nome').value            = nomeLimpo;
+            document.getElementById('edit-preco').value           = precos[nomeLimpo] || 0;
+            document.getElementById('edit-categoria').value       = categorias[nomeLimpo] || 'cozinha';
+
+            new bootstrap.Modal(document.getElementById('modalEditarItem')).show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('btnSalvarEdicao').addEventListener('click', function() {
+                const nomeOriginal = document.getElementById('edit-nome-original').value;
+                const index        = parseInt(document.getElementById('edit-index-original').value);
+                const novoNome     = document.getElementById('edit-nome').value.trim();
+                const novoPreco    = parseFloat(document.getElementById('edit-preco').value);
+                const novaCateg    = document.getElementById('edit-categoria').value;
+
+                if (!novoNome || isNaN(novoPreco) || novoPreco < 0) {
+                    exibirToastAdmin("Preencha nome e preço corretamente.", "bi-exclamation-triangle-fill text-danger");
+                    return;
+                }
+
+                const cardapio   = obterCardapio();
+                const precos     = obterPrecos();
+                const categorias = obterCategorias();
+
+                // Se o nome mudou, verifica duplicata
+                if (novoNome !== nomeOriginal && precos[novoNome] !== undefined) {
+                    exibirToastAdmin(`Já existe um item com o nome "${novoNome}".`, "bi-exclamation-triangle-fill text-danger");
+                    return;
+                }
+
+                // Atualiza a entrada no array do cardápio
+                cardapio[index] = `${novoNome} - R$ ${novoPreco.toFixed(2).replace('.', ',')}`;
+
+                // Se o nome mudou, remove a chave antiga e cria a nova
+                if (novoNome !== nomeOriginal) {
+                    delete precos[nomeOriginal];
+                    delete categorias[nomeOriginal];
+                }
+                precos[novoNome]     = novoPreco;
+                categorias[novoNome] = novaCateg;
+
+                localStorage.setItem('burguerflow_cardapio',   JSON.stringify(cardapio));
+                localStorage.setItem('burguerflow_precos',     JSON.stringify(precos));
+                localStorage.setItem('burguerflow_categorias', JSON.stringify(categorias));
+
+                bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
+                renderizarTabelaCardapio();
+                exibirToastAdmin(`"${novoNome}" atualizado com sucesso!`, "bi-pencil-fill text-primary");
+            });
+        });
+
         function salvarItemCardapio() {
             const inputNome  = document.getElementById('modal-nome-produto');
             const inputPreco = document.getElementById('modal-preco-produto');
-            const nome  = inputNome.value.trim();
-            const preco = parseFloat(inputPreco.value);
+            const selectCat  = document.getElementById('modal-categoria-produto');
+            const nome       = inputNome.value.trim();
+            const preco      = parseFloat(inputPreco.value);
+            const categoria  = selectCat.value;
 
             if (!nome || isNaN(preco)) {
                 exibirToastAdmin("Preencha o nome e o preço corretamente.", "bi-exclamation-triangle-fill text-danger");
                 return;
             }
 
-            const cardapio = obterCardapio();
-            const precos   = obterPrecos();
+            const cardapio   = obterCardapio();
+            const precos     = obterPrecos();
+            const categorias = obterCategorias();
 
             if (precos[nome] !== undefined) {
                 exibirToastAdmin(`O item "${nome}" já existe!`, "bi-exclamation-triangle-fill text-danger");
@@ -392,15 +523,18 @@
             }
 
             cardapio.push(`${nome} - R$ ${preco.toFixed(2).replace('.', ',')}`);
-            precos[nome] = preco;
+            precos[nome]     = preco;
+            categorias[nome] = categoria;
 
-            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
-            localStorage.setItem('burguerflow_precos',   JSON.stringify(precos));
+            localStorage.setItem('burguerflow_cardapio',   JSON.stringify(cardapio));
+            localStorage.setItem('burguerflow_precos',     JSON.stringify(precos));
+            localStorage.setItem('burguerflow_categorias', JSON.stringify(categorias));
 
             inputNome.value  = "";
             inputPreco.value = "";
             renderizarTabelaCardapio();
-            exibirToastAdmin(`"${nome}" adicionado e publicado com sucesso!`, "bi-plus-circle-fill text-warning");
+            const labelCat = categoria === "balcao" ? "Balcão" : "Cozinha";
+            exibirToastAdmin(`"${nome}" (${labelCat}) adicionado com sucesso!`, "bi-plus-circle-fill text-warning");
         }
 
         // Variáveis para a confirmação de exclusão
@@ -418,14 +552,17 @@
             document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
                 bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
 
-                const cardapio = obterCardapio();
-                const precos   = obterPrecos();
+                const cardapio   = obterCardapio();
+                const precos     = obterPrecos();
+                const categorias = obterCategorias();
 
                 cardapio.splice(_indexParaExcluir, 1);
                 delete precos[_nomeParaExcluir];
+                delete categorias[_nomeParaExcluir];
 
-                localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapio));
-                localStorage.setItem('burguerflow_precos',   JSON.stringify(precos));
+                localStorage.setItem('burguerflow_cardapio',   JSON.stringify(cardapio));
+                localStorage.setItem('burguerflow_precos',     JSON.stringify(precos));
+                localStorage.setItem('burguerflow_categorias', JSON.stringify(categorias));
 
                 renderizarTabelaCardapio();
                 exibirToastAdmin(`"${_nomeParaExcluir}" removido com sucesso.`);

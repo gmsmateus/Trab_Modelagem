@@ -46,6 +46,14 @@
                 <div class="modal-body">
                     <h6 class="text-muted small mb-2">Produtos Consumidos:</h6>
                     <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3" style="max-height: 250px; overflow-y: auto;"></div>
+                    
+                    <!-- Aviso de itens pendentes — visível apenas quando necessário -->
+                    <div id="aviso-itens-pendentes" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        <strong>Itens ainda não entregues:</strong>
+                        <ul id="lista-itens-pendentes" class="mb-0 mt-1 ps-3"></ul>
+                    </div>
+
                     <div class="d-flex justify-content-between align-items-center border-top pt-2">
                         <span class="fw-bold">VALOR TOTAL:</span>
                         <span id="modal-total-mesa" class="fs-4 fw-bold text-success">R$ 0,00</span>
@@ -192,9 +200,9 @@
                     // Faz a soma dos itens dinamicamente
                     const calculo = calcularMesa(mesa.itens);
                     
-                    // Se todos os itens da comanda já estiverem "Entregue", muda o visual do status
-                    const todosEntregues = mesa.itens.length > 0 && mesa.itens.every(item => item.status === "Entregue");
-                    const badgeStatus = todosEntregues 
+                    // Se todos os itens da comanda já estiverem "Entregue" ou "Pronto", muda o visual do status
+                    const todosFinalizados = mesa.itens.length > 0 && mesa.itens.every(item => item.status === "Entregue" || item.status === "Pronto");
+                    const badgeStatus = todosFinalizados
                         ? `<span class="badge bg-warning text-dark fw-bold"><i class="bi bi-bell-fill animate-flicker"></i> Aguardando Pagamento</span>`
                         : `<span class="badge bg-danger">Consumo Ativo</span>`;
 
@@ -228,15 +236,40 @@
         // --- ABRIR DETALHES ---
         function abrirDetalhesMesa(numMesa) {
             mesaSelecionadaCaixa = numMesa;
-            const dados = obterDadosMesas();
-            const calculo = calcularMesa(dados[numMesa].itens);
+            const dados   = obterDadosMesas();
+            const itens   = dados[numMesa].itens;
+            const calculo = calcularMesa(itens);
 
             totalCalculadoMesa = calculo.total;
 
             document.getElementById('modal-num-mesa').innerText = numMesa;
             document.getElementById('modal-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
             document.getElementById('modal-lista-produtos').innerHTML = calculo.listaHTML;
-            
+
+            // Verifica itens que ainda não foram entregues
+            const statusBloqueantes = ["Rascunho", "Pendente", "Em preparo", "Pronto"];
+            const itensPendentes = itens.filter(item => statusBloqueantes.includes(item.status));
+
+            const avisoEl  = document.getElementById('aviso-itens-pendentes');
+            const listaEl  = document.getElementById('lista-itens-pendentes');
+            const btnBaixa = document.getElementById('btnProcessarBaixa');
+
+            if (itensPendentes.length > 0) {
+                // Monta a lista de itens pendentes com seu status atual
+                const labelStatus = { "Rascunho": "a enviar", "Pendente": "na fila da cozinha", "Em preparo": "em preparo", "Pronto": "pronto, aguardando entrega" };
+                listaEl.innerHTML = itensPendentes.map(item =>
+                    `<li><strong>${item.produto.split(" - ")[0]}</strong> — ${labelStatus[item.status] || item.status}</li>`
+                ).join('');
+                avisoEl.classList.remove('d-none');
+                btnBaixa.disabled = true;
+                btnBaixa.title = "Aguarde todos os itens serem entregues para processar o pagamento.";
+            } else {
+                avisoEl.classList.add('d-none');
+                listaEl.innerHTML = '';
+                btnBaixa.disabled = false;
+                btnBaixa.title = '';
+            }
+
             modalDetalhes.show();
         }
 

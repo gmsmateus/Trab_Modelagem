@@ -25,7 +25,7 @@
             <div class="modal-content card-sistema">
                 <div class="modal-body text-center pt-4">
                     <i class="bi bi-question-circle-fill text-success fs-1 mb-3 d-block"></i>
-                    <p class="mb-4">Deseja marcar o pedido da <strong id="nome-mesa-cozinha">--</strong> como pronto e enviar para expedição?</p>
+                    <p class="mb-4">Deseja marcar o pedido da <strong id="nome-mesa-cozinha">--</strong> como <strong>pronto</strong>? O garçom será responsável pela entrega na mesa.</p>
                     <div class="d-flex justify-content-center gap-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Não</button>
                         <button type="button" class="btn btn-sm btn-success px-3" id="btnConfirmarPronto">Sim, Pronto</button>
@@ -79,16 +79,20 @@
             Object.keys(dados).forEach(numMesa => {
                 const mesa = dados[numMesa];
                 
-                // Filtra para pegar apenas itens que foram de fato ENVIADOS (status Pendente ou Em preparo)
-                const itensParaCozinha = mesa.itens.filter(item => item.status === "Pendente" || item.status === "Em preparo");
+                // Filtra apenas itens de COZINHA que precisam de preparo (ignora balcão)
+                const itensParaCozinha = mesa.itens.filter(item =>
+                    (item.categoria === "cozinha" || !item.categoria) &&
+                    (item.status === "Pendente" || item.status === "Em preparo" || item.status === "Pronto")
+                );
 
                 if (itensParaCozinha.length > 0) {
                     temPedido = true;
 
                     // Determina o status geral da Mesa baseado nos itens dela
                     const possuiItemEmPreparo = itensParaCozinha.some(item => item.status === "Em preparo");
-                    const statusGeralText = possuiItemEmPreparo ? "Em Preparo" : "Pendente";
-                    const statusGeralBadge = possuiItemEmPreparo ? "bg-primary text-white" : "bg-warning text-dark";
+                    const todosPronte = itensParaCozinha.length > 0 && itensParaCozinha.every(item => item.status === "Pronto");
+                    const statusGeralText  = todosPronte ? "Pronto p/ Retirada" : possuiItemEmPreparo ? "Em Preparo" : "Pendente";
+                    const statusGeralBadge = todosPronte ? "bg-success text-white" : possuiItemEmPreparo ? "bg-primary text-white" : "bg-warning text-dark";
 
                     // Cria o HTML dos itens do card
                     let itensHTML = "";
@@ -101,8 +105,8 @@
                     });
 
                     // Controla ativação dos botões
-                    const btnIniciarDisabled = possuiItemEmPreparo ? "disabled" : "";
-                    const btnProntoDisabled = possuiItemEmPreparo ? "" : "disabled";
+                    const btnIniciarDisabled = possuiItemEmPreparo || todosPronte ? "disabled" : "";
+                    const btnProntoDisabled  = possuiItemEmPreparo && !todosPronte ? "" : "disabled";
 
                     container.innerHTML += `
                         <div id="pedido-m${numMesa}" class="col-md-6 col-lg-4">
@@ -169,31 +173,19 @@
         // --- CONFIRMAR "PRONTO" NO MODAL ---
         document.getElementById('btnConfirmarPronto').addEventListener('click', function() {
             const modalEl = document.getElementById('modalConfirmarCozinha');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
+            bootstrap.Modal.getInstance(modalEl).hide();
             
             const dados = obterDadosMesas();
             
-            // Cozinha finalizou: muda os itens de "Em preparo" para "Entregue"
+            // Cozinha finalizou: muda os itens de "Em preparo" para "Pronto" — garçom fará a entrega
             dados[mesaSelecionadaParaPronto].itens.forEach(item => {
                 if (item.status === "Em preparo") {
-                    item.status = "Entregue";
+                    item.status = "Pronto";
                 }
             });
 
-            // Aplica efeito de transição visual antes de sumir
-            const card = document.getElementById(`pedido-m${mesaSelecionadaParaPronto}`);
-            if (card) {
-                card.style.transition = 'all 0.4s ease';
-                card.style.opacity = '0';
-                card.style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    salvarDadosMesas(dados);
-                    exibirToastCozinha(`Pedido da Mesa ${mesaSelecionadaParaPronto} enviado para a expedição!`);
-                }, 400);
-            } else {
-                salvarDadosMesas(dados);
-            }
+            salvarDadosMesas(dados);
+            exibirToastCozinha(`Pedido da Mesa ${mesaSelecionadaParaPronto} marcado como pronto! Aguardando retirada pelo garçom.`);
         });
 
         // Carrega a fila assim que entra na tela
