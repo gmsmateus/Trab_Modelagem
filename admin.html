@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <style>
         .btn-nav-admin {
             background: none;
@@ -45,25 +46,6 @@
             color: #adb5bd;
         }
 
-        @media print {
-            /* Esconde tudo da página */
-            body * { visibility: hidden; }
-            /* Mostra só o conteúdo do relatório */
-            #secao-relatorio, #secao-relatorio * { visibility: visible; }
-            #secao-relatorio {
-                position: fixed;
-                top: 0; left: 0;
-                width: 100%;
-                padding: 24px;
-            }
-            /* Remove scroll e sombra */
-            #painel-conteudo {
-                max-height: none !important;
-                overflow: visible !important;
-            }
-            /* Esconde botões na impressão */
-            #secao-relatorio button { display: none !important; }
-        }
     </style>
 </head>
 <body class="bg-light">
@@ -248,8 +230,8 @@
                                 </button>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-outline-secondary btn-sm w-100" onclick="imprimirRelatorioPDF()">
-                                    <i class="bi bi-printer"></i> Imprimir
+                                <button class="btn btn-outline-success btn-sm w-100" onclick="exportarXLSX()">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> Exportar
                                 </button>
                             </div>
                         </div>
@@ -353,11 +335,6 @@
                             </table>
                         </div>
 
-                        <div class="text-end">
-                            <button class="btn btn-outline-dark btn-sm" onclick="imprimirRelatorioPDF()">
-                                <i class="bi bi-printer"></i> Imprimir PDF
-                            </button>
-                        </div>
                     </div>
 
                 </div>
@@ -764,9 +741,12 @@
         //  RELATÓRIO
         // ============================================================
         function definirDatasFiltro() {
-            const hoje = new Date().toISOString().split('T')[0];
-            const ini  = document.getElementById('data-inicial');
-            const fim  = document.getElementById('data-final');
+            const agora = new Date();
+            const hoje  = agora.getFullYear() + '-'
+                + String(agora.getMonth() + 1).padStart(2, '0') + '-'
+                + String(agora.getDate()).padStart(2, '0');
+            const ini = document.getElementById('data-inicial');
+            const fim = document.getElementById('data-final');
             ini.value = hoje;
             ini.max   = hoje;
             fim.value = hoje;
@@ -774,20 +754,17 @@
             fim.min   = hoje;
         }
 
-        // Garante que data-final nunca fique antes de data-inicial nem depois de hoje
         function sincronizarDatas() {
-            const hoje = new Date().toISOString().split('T')[0];
-            const ini  = document.getElementById('data-inicial');
-            const fim  = document.getElementById('data-final');
+            const agora = new Date();
+            const hoje  = agora.getFullYear() + '-'
+                + String(agora.getMonth() + 1).padStart(2, '0') + '-'
+                + String(agora.getDate()).padStart(2, '0');
+            const ini = document.getElementById('data-inicial');
+            const fim = document.getElementById('data-final');
 
-            // Impede data inicial futura
             if (ini.value > hoje) ini.value = hoje;
-
-            // Atualiza limites do campo final
             fim.min = ini.value;
             fim.max = hoje;
-
-            // Corrige data final se ficou inválida
             if (fim.value < ini.value) fim.value = ini.value;
             if (fim.value > hoje)      fim.value = hoje;
         }
@@ -960,8 +937,207 @@
         // Alias para compatibilidade
         function carregarMétricasRelatorio() { carregarMetricasRelatorio(); }
 
-        function imprimirRelatorioPDF() { window.print(); }
+        function exportarXLSX() {
+            const dataIni    = document.getElementById('data-inicial').value;
+            const dataFim    = document.getElementById('data-final').value;
+            const historico  = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+            const categorias = obterCategorias();
+            const precos     = obterPrecos();
+            const vendas     = historico.filter(v => v.data >= dataIni && v.data <= dataFim);
 
+            if (vendas.length === 0) {
+                exibirToastAdmin("Nenhuma venda no período para exportar.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+
+            // ── Recalcula métricas ──
+            let faturamento = 0, totalItens = 0;
+            const contProd = {}, contPagto = {};
+            vendas.forEach(v => {
+                faturamento += v.valorTotal;
+                const f = v.formaPagamento || 'Nao informado';
+                if (!contPagto[f]) contPagto[f] = { qtd: 0, total: 0 };
+                contPagto[f].qtd++;
+                contPagto[f].total += v.valorTotal;
+                (v.itens || []).forEach(item => {
+                    const nome  = item.produto.split(' - ')[0].trim();
+                    const preco = precos[nome] || 0;
+                    const cat   = categorias[nome] || item.categoria || 'cozinha';
+                    if (!contProd[nome]) contProd[nome] = { qtd: 0, receita: 0, categoria: cat };
+                    contProd[nome].qtd++;
+                    contProd[nome].receita += preco;
+                    totalItens++;
+                });
+            });
+
+            const ticketMedio = vendas.length > 0 ? faturamento / vendas.length : 0;
+            const ranking     = Object.entries(contProd).sort((a, b) => b[1].qtd - a[1].qtd);
+            const receitaCat  = { cozinha: { qtd: 0, receita: 0 }, balcao: { qtd: 0, receita: 0 } };
+            Object.values(contProd).forEach(p => {
+                const c = p.categoria === 'balcao' ? 'balcao' : 'cozinha';
+                receitaCat[c].qtd     += p.qtd;
+                receitaCat[c].receita += p.receita;
+            });
+
+            const moeda = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+            // ── Paleta fiel ao sistema ──
+            const COR = {
+                dark:       '212529',  // table-dark (cabeçalho Top5 e Histórico)
+                secondary:  '6C757D',  // table-secondary (cabeçalho Pagamento, Categoria, Menos Vendidos)
+                branco:     'FFFFFF',
+                zebraClaro: 'F8F9FA',  // linha par
+                borda:      'DEE2E6',
+                // Cards de resumo
+                verdeCard:  'D1E7DD',
+                azulCard:   'CFE2FF',
+                amareloCard:'FFF3CD',
+                cinzaCard:  'E2E3E5',
+                // Texto dos cards
+                verdeTexto: '0A3622',
+                azulTexto:  '084298',
+                amareloTexto:'664D03',
+                cinzaTexto: '41464B',
+            };
+
+            // Fábrica de estilos de célula
+            const s = (bg, fgRgb, bold, sz, border, align) => ({
+                font:  { bold: !!bold, sz: sz || 10, color: { rgb: fgRgb || '000000' } },
+                fill:  { fgColor: { rgb: bg || 'FFFFFF' } },
+                border: border ? {
+                    top:    { style: 'thin', color: { rgb: COR.borda } },
+                    bottom: { style: 'thin', color: { rgb: COR.borda } },
+                    left:   { style: 'thin', color: { rgb: COR.borda } },
+                    right:  { style: 'thin', color: { rgb: COR.borda } }
+                } : {},
+                alignment: { vertical: 'center', horizontal: align || 'left', wrapText: true }
+            });
+
+            // Estilos nomeados
+            const ES = {
+                titulo:       s('F8F9FA', '495057', true,  11, false, 'left'),
+                cabDark:      s(COR.dark,      COR.branco,      true,  10, true,  'center'),
+                cabSecondary: s(COR.secondary, COR.branco,      true,  10, true,  'center'),
+                dadoPar:      s(COR.branco,    '212529',        false, 10, true,  'left'),
+                dadoImpar:    s(COR.zebraClaro,'212529',        false, 10, true,  'left'),
+                cardVerde:    s(COR.verdeCard,  COR.verdeTexto,  true, 11, false, 'center'),
+                cardAzul:     s(COR.azulCard,   COR.azulTexto,   true, 11, false, 'center'),
+                cardAmarelo:  s(COR.amareloCard,COR.amareloTexto,true, 11, false, 'center'),
+                cardCinza:    s(COR.cinzaCard,  COR.cinzaTexto,  true, 11, false, 'center'),
+                vazio:        s(COR.branco, COR.branco, false, 8, false, 'left'),
+            };
+
+            // ── Monta sheet única ──
+            // aoa = [ { row: [...valores], estilos: [...ES_por_col], altura } ]
+            const rows = [];
+
+            const push = (valores, estilosPorCol, altura) =>
+                rows.push({ valores, estilosPorCol, altura: altura || 16 });
+
+            const vazio = (n) =>
+                push(Array(n).fill(''), Array(n).fill(ES.vazio), 8);
+
+            // --- Cabeçalho do arquivo ---
+            push(['BurguerFlow - Relatório de Vendas', '', '', '', ''],
+                 [s('212529','FFFFFF',true,13,false,'left'), ...Array(4).fill(ES.vazio)], 24);
+            push(['Período: ' + dataIni + ' até ' + dataFim, '', '', '', ''],
+                 [s('F8F9FA','495057',false,10,false,'left'), ...Array(4).fill(ES.vazio)], 14);
+            vazio(5);
+
+            // --- Cards de resumo (uma linha com 4 grupos lado a lado) ---
+            push(['Faturamento Bruto', 'Comandas Fechadas', 'Ticket Médio', 'Itens Vendidos', ''],
+                 [ES.cardVerde, ES.cardAzul, ES.cardAmarelo, ES.cardCinza, ES.vazio], 14);
+            push([moeda(faturamento), vendas.length, moeda(ticketMedio), totalItens, ''],
+                 [ES.cardVerde, ES.cardAzul, ES.cardAmarelo, ES.cardCinza, ES.vazio], 20);
+            vazio(5);
+
+            // --- Formas de Pagamento (table-secondary) ---
+            push(['Formas de Pagamento', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio], 14);
+            push(['Forma', 'Qtd', 'Total'],
+                 [ES.cabSecondary, ES.cabSecondary, ES.cabSecondary], 16);
+            Object.entries(contPagto).sort((a,b) => b[1].total - a[1].total)
+                .forEach(([f, d], i) => push(
+                    [f, d.qtd, moeda(d.total)],
+                    [i%2===0?ES.dadoPar:ES.dadoImpar, i%2===0?ES.dadoPar:ES.dadoImpar, i%2===0?ES.dadoPar:ES.dadoImpar]
+                ));
+            vazio(3);
+
+            // --- Receita por Categoria (table-secondary) ---
+            push(['Receita por Categoria', '', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio, ES.vazio], 14);
+            push(['Categoria', 'Itens Vendidos', 'Receita', '% do Total'],
+                 [ES.cabSecondary, ES.cabSecondary, ES.cabSecondary, ES.cabSecondary], 16);
+            ['cozinha','balcao'].forEach((cat, i) => {
+                const d   = receitaCat[cat];
+                const pct = faturamento > 0 ? ((d.receita/faturamento)*100).toFixed(1)+'%' : '0.0%';
+                const e   = i%2===0 ? ES.dadoPar : ES.dadoImpar;
+                push([cat==='cozinha'?'Cozinha':'Balcão', d.qtd, moeda(d.receita), pct], [e,e,e,e]);
+            });
+            vazio(4);
+
+            // --- Top 5 Mais Vendidos (table-dark) ---
+            push(['Top 5 Mais Vendidos', '', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio, ES.vazio], 14);
+            push(['#', 'Produto', 'Qtd Vendida', 'Receita'],
+                 [ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark], 16);
+            ranking.slice(0,5).forEach(([nome, d], i) => {
+                const e = i%2===0 ? ES.dadoPar : ES.dadoImpar;
+                push([i+1, nome, d.qtd+' un', moeda(d.receita)], [e,e,e,e]);
+            });
+            vazio(4);
+
+            // --- Menos Vendidos (table-secondary) ---
+            push(['Itens Menos Vendidos', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio], 14);
+            push(['Produto', 'Qtd Vendida', 'Receita'],
+                 [ES.cabSecondary, ES.cabSecondary, ES.cabSecondary], 16);
+            ranking.slice(-3).reverse().forEach(([nome, d], i) => {
+                const e = i%2===0 ? ES.dadoPar : ES.dadoImpar;
+                push([nome, d.qtd+' un', moeda(d.receita)], [e,e,e]);
+            });
+            vazio(3);
+
+            // --- Histórico de Comandas (table-dark) ---
+            push(['Histórico de Comandas', '', '', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio, ES.vazio, ES.vazio], 14);
+            push(['Data', 'Mesa', 'Itens', 'Forma de Pagamento', 'Total'],
+                 [ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark], 16);
+            [...vendas].reverse().forEach((v, i) => {
+                const itens = (v.itens||[]).map(it => it.produto.split(' - ')[0]).join(', ');
+                const e = i%2===0 ? ES.dadoPar : ES.dadoImpar;
+                push([v.data, 'Mesa '+v.mesa, itens, v.formaPagamento||'—', moeda(v.valorTotal)], [e,e,e,e,e]);
+            });
+
+            // ── Monta a worksheet ──
+            const aoa = rows.map(r => r.valores);
+            const ws  = XLSX.utils.aoa_to_sheet(aoa);
+
+            // Aplica estilos e alturas
+            rows.forEach((r, ri) => {
+                r.valores.forEach((_, ci) => {
+                    const addr = XLSX.utils.encode_cell({ r: ri, c: ci });
+                    if (!ws[addr]) ws[addr] = { v: '', t: 's' };
+                    ws[addr].s = r.estilosPorCol[ci] || ES.vazio;
+                });
+            });
+            ws['!rows'] = rows.map(r => ({ hpt: r.altura }));
+
+            // Largura das colunas
+            const maxCols = Math.max(...aoa.map(r => r.length));
+            ws['!cols'] = Array.from({ length: maxCols }, (_, ci) => {
+                const max = aoa.reduce((m, row) => {
+                    const v = row[ci] != null ? String(row[ci]).length : 0;
+                    return v > m ? v : m;
+                }, 8);
+                return { wch: Math.min(max + 4, 55) };
+            });
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+            XLSX.writeFile(wb, 'burguerflow_' + dataIni + '_' + dataFim + '.xlsx');
+            exibirToastAdmin("Planilha exportada com sucesso!", "bi-file-earmark-spreadsheet text-success");
+        }
     </script>
 </body>
 </html>
