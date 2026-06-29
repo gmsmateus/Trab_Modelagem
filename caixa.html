@@ -9,338 +9,317 @@
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body class="bg-light">
-    <div class="container py-4">
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="bi bi-cash-stack"></i> Painel do Caixa</h1>
-            <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
-        </div>
+<div class="container py-4">
 
-        <div class="card card-sistema shadow-sm p-4">
-            <h5 class="mb-4 text-muted">Comandas em Aberto / Aguardando Pagamento</h5>
-            
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Mesa</th>
-                            <th>Status da Comanda</th>
-                            <th>Total Acumulado</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-caixa-corpo">
-                        </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-cash-stack"></i> Painel do Caixa</h1>
+        <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar</a>
     </div>
 
-    <div class="modal fade" id="modalDetalhesCaixa" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt"></i> Extrato de Consumo - Mesa <span id="modal-num-mesa">--</span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6 class="text-muted small mb-2">Produtos Consumidos:</h6>
-                    <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3" style="max-height: 250px; overflow-y: auto;"></div>
-                    
-                    <!-- Aviso de itens pendentes — visível apenas quando necessário -->
-                    <div id="aviso-itens-pendentes" class="alert alert-warning py-2 px-3 small mb-3 d-none">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                        <strong>Itens ainda não entregues:</strong>
-                        <ul id="lista-itens-pendentes" class="mb-0 mt-1 ps-3"></ul>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center border-top pt-2">
-                        <span class="fw-bold">VALOR TOTAL:</span>
-                        <span id="modal-total-mesa" class="fs-4 fw-bold text-success">R$ 0,00</span>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" id="btnProcessarBaixa">
-                        <i class="bi bi-currency-dollar"></i> Processar Baixa
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalProcessarPagamento" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h6 class="modal-title fw-bold text-center w-100"><i class="bi bi-credit-card-2-back text-success"></i> Confirmar Recebimento</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body pt-2 text-center">
-                    <p class="mb-3">Deseja dar baixa na <strong>Mesa <span id="confirm-num-mesa">--</span></strong> no valor de <strong id="confirm-total-mesa" class="text-success">--</strong>?</p>
-                    <div class="mb-3 text-start">
-                        <label class="form-label small text-muted mb-1">Forma de Pagamento:</label>
-                        <select class="form-select form-select-sm" id="formaPagamento">
-                            <option value="Dinheiro">💵 Dinheiro</option>
-                            <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
-                            <option value="Cartão de Débito">💳 Cartão de Débito</option>
-                            <option value="Pix">📱 Pix</option>
-                        </select>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2 mt-4">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-sm btn-success px-3" id="btnConfirmarBaixaEfetiva">Finalizar e Liberar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
-        <div id="toastCaixa" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    <i class="bi bi-check-circle-fill text-success"></i>
-                    <span id="toastCaixaMensagem">Pagamento efetuado!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let modalDetalhes;
-        let modalPagamento;
-        let mesaSelecionadaCaixa = "";
-        let totalCalculadoMesa = 0;
-
-        document.addEventListener("DOMContentLoaded", function() {
-            modalDetalhes = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
-            modalPagamento = new bootstrap.Modal(document.getElementById('modalProcessarPagamento'));
-            renderizarPainelCaixa();
-        });
-
-        function obterDadosMesas() {
-            return JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
-        }
-
-        function salvarDadosMesas(dados) {
-            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
-            renderizarPainelCaixa();
-        }
-
-        function exibirToastCaixa(mensagem) {
-            document.getElementById('toastCaixaMensagem').innerText = mensagem;
-            const toastEl = document.getElementById('toastCaixa');
-            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
-            toast.show();
-        }
-
-        // --- BUSCA PREÇO DINÂMICO DO LOCALSTORAGE OU USA O PADRÃO ---
-        function obterPrecoDoProduto(nomeProdutoFormatado) {
-            // Separa o nome limpo se a string vier com o preço junto (Ex: "X-Burger Clássico - R$ 24,90")
-            const nomeLimpo = nomeProdutoFormatado.split(" - ")[0].trim();
-            
-            // Puxa a tabela dinâmica do Admin
-            const precosPainel = JSON.parse(localStorage.getItem('burguerflow_precos')) || {};
-            
-            // Tabela reserva de contingência
-            const tabelaPrecosPadrao = {
-                "X-Burger Clássico": 24.90,
-                "X-Salada Especial": 26.90,
-                "Batata Frita M": 12.00,
-                "Coca-Cola 350ml": 6.00,
-                "Suco Natural": 8.00
-            };
-
-            // Retorna o valor cadastrado pelo admin, ou o padrão da comanda, ou 0 caso não ache nada
-            return precosPainel[nomeLimpo] || tabelaPrecosPadrao[nomeLimpo] || 0;
-        }
-
-        // --- CALCULAR TOTAL E GERAR DETALHES DE UMA MESA ---
-        function calcularMesa(itens) {
-            let total = 0;
-            let listaHTML = "";
-
-            if (itens.length === 0) {
-                listaHTML = `<span class="text-muted fst-italic">Nenhum item consumido.</span>`;
-            } else {
-                itens.forEach(item => {
-                    // Obtém o preço dinamicamente baseado no nome do produto
-                    const preco = obterPrecoDoProduto(item.produto);
-                    total += preco;
-                    
-                    listaHTML += `
-                        <div class="d-flex justify-content-between mb-1 border-bottom pb-1 small">
-                            <span>1x ${item.produto.split(" - ")[0]}</span>
-                            <span class="fw-bold">R$ ${preco.toFixed(2).replace('.', ',')}</span>
-                        </div>
-                    `;
-                });
-            }
-            return { total, listaHTML };
-        }
-
-        // --- RENDERIZAR TABELA DO CAIXA DINAMICAMENTE ---
-        function renderizarPainelCaixa() {
-            const dados = obterDadosMesas();
-            const tableCorpo = document.getElementById('tabela-caixa-corpo');
-            tableCorpo.innerHTML = "";
-
-            let temMesaOcupada = false;
-
-            Object.keys(dados).forEach(numMesa => {
-                const mesa = dados[numMesa];
-
-                // Só exibe na tabela se a mesa estiver Ocupada
-                if (mesa.status === "Ocupada") {
-                    temMesaOcupada = true;
-                    
-                    // Faz a soma dos itens dinamicamente
-                    const calculo = calcularMesa(mesa.itens);
-                    
-                    // Se todos os itens da comanda já estiverem "Entregue" ou "Pronto", muda o visual do status
-                    const todosFinalizados = mesa.itens.length > 0 && mesa.itens.every(item => item.status === "Entregue" || item.status === "Pronto");
-                    const badgeStatus = todosFinalizados
-                        ? `<span class="badge bg-warning text-dark fw-bold"><i class="bi bi-bell-fill animate-flicker"></i> Aguardando Pagamento</span>`
-                        : `<span class="badge bg-danger">Consumo Ativo</span>`;
-
-                    tableCorpo.innerHTML += `
-                        <tr>
-                            <td><strong>Mesa ${numMesa}</strong></td>
-                            <td>${badgeStatus}</td>
-                            <td class="fw-bold text-success fs-6">R$ ${calculo.total.toFixed(2).replace('.', ',')}</td>
-                            <td class="text-center">
-                                <button onclick="abrirDetalhesMesa('${numMesa}')" class="btn btn-sm btn-outline-primary btn-perfil px-3">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }
-            });
-
-            if (!temMesaOcupada) {
-                tableCorpo.innerHTML = `
+    <div class="card card-sistema shadow-sm p-4">
+        <h5 class="mb-4 text-muted">Comandas em Aberto / Aguardando Pagamento</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
                     <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">
-                            <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
-                            Nenhuma mesa ocupada ou em consumo no momento.
-                        </td>
+                        <th>Mesa</th>
+                        <th>Comanda</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th class="text-center">Ações</th>
                     </tr>
-                `;
+                </thead>
+                <tbody id="tabela-caixa-corpo"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div class="modal fade" id="modalDetalhesCaixa" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-sistema">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-receipt"></i> Mesa <span id="modal-num-mesa">--</span> —
+                    Comanda <span id="modal-num-comanda">--</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="text-muted small mb-2">Produtos Consumidos:</h6>
+                <div id="modal-lista-produtos" class="p-3 bg-light rounded border mb-3" style="max-height:250px;overflow-y:auto;"></div>
+
+                <div id="aviso-itens-pendentes" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>Itens ainda não entregues:</strong>
+                    <ul id="lista-itens-pendentes" class="mb-0 mt-1 ps-3"></ul>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                    <span class="fw-bold">VALOR TOTAL:</span>
+                    <span id="modal-total-mesa" class="fs-4 fw-bold text-success">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-verde btn-sm px-3" id="btnProcessarBaixa">
+                    <i class="bi bi-currency-dollar"></i> Processar Baixa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR PAGAMENTO -->
+<div class="modal fade" id="modalProcessarPagamento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content card-sistema">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h6 class="modal-title fw-bold text-center w-100">
+                    <i class="bi bi-credit-card-2-back text-success"></i> Confirmar Recebimento
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2 text-center">
+                <p class="mb-3">
+                    Mesa <strong id="confirm-num-mesa">--</strong> —
+                    Comanda <strong id="confirm-num-comanda">--</strong><br>
+                    Valor: <strong id="confirm-total-mesa" class="text-success">--</strong>
+                </p>
+                <div class="mb-3 text-start">
+                    <label class="form-label small text-muted mb-1">Forma de Pagamento:</label>
+                    <select class="form-select form-select-sm" id="formaPagamento">
+                        <option value="Dinheiro">💵 Dinheiro</option>
+                        <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                        <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                        <option value="Pix">📱 Pix</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-sm btn-success px-3" id="btnConfirmarBaixaEfetiva">Finalizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1060">
+    <div id="toastCaixa" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span id="toastCaixaMensagem"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let modalDetalhes, modalPagamento;
+    let selecionado = null; // { mesa, cidx }
+    let totalCalculado = 0;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        modalDetalhes  = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
+        modalPagamento = new bootstrap.Modal(document.getElementById('modalProcessarPagamento'));
+        renderizarPainelCaixa();
+    });
+
+    function obterDadosMesas() {
+        const dados = JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
+        // Migração de segurança: garante formato comandas[]
+        Object.keys(dados).forEach(n => {
+            const mesa = dados[n];
+            if (!mesa.comandas) {
+                mesa.comandas = (mesa.itens && mesa.itens.length > 0)
+                    ? [{ id: 1, itens: mesa.itens }] : [];
+                delete mesa.itens;
             }
+            mesa.comandas.forEach(c => { if (!c.itens) c.itens = []; });
+        });
+        return dados;
+    }
+
+    function salvarDadosMesas(dados) {
+        localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+        renderizarPainelCaixa();
+    }
+
+    function exibirToastCaixa(msg) {
+        document.getElementById('toastCaixaMensagem').innerText = msg;
+        new bootstrap.Toast(document.getElementById('toastCaixa'), { delay: 3500 }).show();
+    }
+
+    function obterPrecoDoProduto(nome) {
+        const nomeLimpo = nome.split(" - ")[0].trim();
+        const precos    = JSON.parse(localStorage.getItem('burguerflow_precos')) || {};
+        const padrao    = { "X-Burger Clássico":24.90,"X-Salada Especial":26.90,"Batata Frita M":12.00,"Coca-Cola 350ml":6.00,"Suco Natural":8.00 };
+        return precos[nomeLimpo] || padrao[nomeLimpo] || 0;
+    }
+
+    function calcularComanda(itens) {
+        let total = 0, listaHTML = "";
+        if (!itens || itens.length === 0) {
+            listaHTML = `<span class="text-muted fst-italic">Nenhum item.</span>`;
+        } else {
+            itens.forEach(item => {
+                const preco = obterPrecoDoProduto(item.produto);
+                total += preco;
+                listaHTML += `
+                    <div class="d-flex justify-content-between mb-1 border-bottom pb-1 small">
+                        <span>1x ${item.produto.split(" - ")[0]}</span>
+                        <span class="fw-bold">R$ ${preco.toFixed(2).replace('.',',')}</span>
+                    </div>`;
+            });
+        }
+        return { total, listaHTML };
+    }
+
+    function renderizarPainelCaixa() {
+        const dados = obterDadosMesas();
+        const tbody = document.getElementById('tabela-caixa-corpo');
+        tbody.innerHTML = "";
+        let temLinha = false;
+
+        Object.keys(dados).forEach(numMesa => {
+            const mesa = dados[numMesa];
+            if (mesa.status !== "Ocupada") return;
+
+            (mesa.comandas || []).forEach((comanda, cidx) => {
+                // Só mostra comandas que ainda têm itens (não foram fechadas)
+                if (comanda.itens.length === 0) return;
+                temLinha = true;
+
+                const calc = calcularComanda(comanda.itens);
+                const statusBloqueantes = ["Rascunho","Pendente","Em preparo","Pronto"];
+                const pendentes = comanda.itens.filter(it => statusBloqueantes.includes(it.status));
+                const prontoParaPagar = pendentes.length === 0;
+
+                const badge = prontoParaPagar
+                    ? `<span class="badge bg-warning text-dark fw-bold"><i class="bi bi-bell-fill"></i> Aguardando Pagamento</span>`
+                    : `<span class="badge bg-danger">Consumo Ativo</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>Mesa ${numMesa}</strong></td>
+                        <td>Comanda ${comanda.id}</td>
+                        <td>${badge}</td>
+                        <td class="fw-bold text-success">R$ ${calc.total.toFixed(2).replace('.',',')}</td>
+                        <td class="text-center">
+                            <button onclick="abrirDetalhes('${numMesa}',${cidx})"
+                                class="btn btn-sm btn-outline-primary px-3">
+                                <i class="bi bi-eye"></i> Detalhes
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        if (!temLinha) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                        Nenhuma comanda em aberto no momento.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function abrirDetalhes(numMesa, cidx) {
+        selecionado = { mesa: numMesa, cidx };
+        const dados   = obterDadosMesas();
+        const comanda = dados[numMesa].comandas[cidx];
+        const calc    = calcularComanda(comanda.itens);
+        totalCalculado = calc.total;
+
+        document.getElementById('modal-num-mesa').innerText    = numMesa;
+        document.getElementById('modal-num-comanda').innerText = comanda.id;
+        document.getElementById('modal-total-mesa').innerText  = `R$ ${totalCalculado.toFixed(2).replace('.',',')}`;
+        document.getElementById('modal-lista-produtos').innerHTML = calc.listaHTML;
+
+        const statusBloqueantes = ["Rascunho","Pendente","Em preparo","Pronto"];
+        const pendentes = comanda.itens.filter(it => statusBloqueantes.includes(it.status));
+        const avisoEl  = document.getElementById('aviso-itens-pendentes');
+        const listaEl  = document.getElementById('lista-itens-pendentes');
+        const btnBaixa = document.getElementById('btnProcessarBaixa');
+
+        if (pendentes.length > 0) {
+            const label = { "Rascunho":"a enviar","Pendente":"na fila da cozinha","Em preparo":"em preparo","Pronto":"pronto, aguardando entrega" };
+            listaEl.innerHTML = pendentes.map(it =>
+                `<li><strong>${it.produto.split(" - ")[0]}</strong> — ${label[it.status]}</li>`
+            ).join('');
+            avisoEl.classList.remove('d-none');
+            btnBaixa.disabled = true;
+        } else {
+            avisoEl.classList.add('d-none');
+            listaEl.innerHTML = '';
+            btnBaixa.disabled = false;
         }
 
-        // --- ABRIR DETALHES ---
-        function abrirDetalhesMesa(numMesa) {
-            mesaSelecionadaCaixa = numMesa;
+        modalDetalhes.show();
+    }
+
+    document.getElementById('btnProcessarBaixa').addEventListener('click', function() {
+        modalDetalhes.hide();
+        setTimeout(() => {
             const dados   = obterDadosMesas();
-            const itens   = dados[numMesa].itens;
-            const calculo = calcularMesa(itens);
+            const comanda = dados[selecionado.mesa].comandas[selecionado.cidx];
+            document.getElementById('confirm-num-mesa').innerText    = selecionado.mesa;
+            document.getElementById('confirm-num-comanda').innerText = comanda.id;
+            document.getElementById('confirm-total-mesa').innerText  = `R$ ${totalCalculado.toFixed(2).replace('.',',')}`;
+            modalPagamento.show();
+        }, 300);
+    });
 
-            totalCalculadoMesa = calculo.total;
+    document.getElementById('btnConfirmarBaixaEfetiva').addEventListener('click', function() {
+        modalPagamento.hide();
 
-            document.getElementById('modal-num-mesa').innerText = numMesa;
-            document.getElementById('modal-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
-            document.getElementById('modal-lista-produtos').innerHTML = calculo.listaHTML;
+        const { mesa, cidx } = selecionado;
+        const dados   = obterDadosMesas();
+        const comanda = dados[mesa].comandas[cidx];
+        const forma   = document.getElementById('formaPagamento').value;
 
-            // Verifica itens que ainda não foram entregues
-            const statusBloqueantes = ["Rascunho", "Pendente", "Em preparo", "Pronto"];
-            const itensPendentes = itens.filter(item => statusBloqueantes.includes(item.status));
+        // Salva no histórico
+        const agora = new Date();
+        const hoje  = agora.getFullYear() + '-'
+            + String(agora.getMonth()+1).padStart(2,'0') + '-'
+            + String(agora.getDate()).padStart(2,'0');
 
-            const avisoEl  = document.getElementById('aviso-itens-pendentes');
-            const listaEl  = document.getElementById('lista-itens-pendentes');
-            const btnBaixa = document.getElementById('btnProcessarBaixa');
+        const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
+        historico.push({
+            mesa,
+            comanda: comanda.id,
+            valorTotal: totalCalculado,
+            formaPagamento: forma,
+            data: hoje,
+            itens: comanda.itens
+        });
+        localStorage.setItem('burguerflow_historico', JSON.stringify(historico));
 
-            if (itensPendentes.length > 0) {
-                // Monta a lista de itens pendentes com seu status atual
-                const labelStatus = { "Rascunho": "a enviar", "Pendente": "na fila da cozinha", "Em preparo": "em preparo", "Pronto": "pronto, aguardando entrega" };
-                listaEl.innerHTML = itensPendentes.map(item =>
-                    `<li><strong>${item.produto.split(" - ")[0]}</strong> — ${labelStatus[item.status] || item.status}</li>`
-                ).join('');
-                avisoEl.classList.remove('d-none');
-                btnBaixa.disabled = true;
-                btnBaixa.title = "Aguarde todos os itens serem entregues para processar o pagamento.";
-            } else {
-                avisoEl.classList.add('d-none');
-                listaEl.innerHTML = '';
-                btnBaixa.disabled = false;
-                btnBaixa.title = '';
-            }
+        // Remove a comanda fechada da mesa
+        dados[mesa].comandas.splice(cidx, 1);
 
-            modalDetalhes.show();
+        // Se não sobrou nenhuma comanda, libera a mesa
+        if (dados[mesa].comandas.length === 0) {
+            dados[mesa].status = "Livre";
         }
 
-        // --- ENVOLVER AS DUAS MODAIS ---
-        document.getElementById('btnProcessarBaixa').addEventListener('click', function() {
-            modalDetalhes.hide();
-            setTimeout(() => {
-                document.getElementById('confirm-num-mesa').innerText = mesaSelecionadaCaixa;
-                document.getElementById('confirm-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
-                modalPagamento.show();
-            }, 300);
-        });
+        salvarDadosMesas(dados);
+        exibirToastCaixa(`Comanda ${comanda.id} da Mesa ${mesa} fechada via ${forma}! 💵`);
+        selecionado = null;
+    });
 
-        // --- FINALIZAR PAGAMENTO E LIBERAR A MESA NO BANCO ---
-        document.getElementById('btnConfirmarBaixaEfetiva').addEventListener('click', function() {
-            modalPagamento.hide();
-    
-            const dados = obterDadosMesas();
-            const forma = document.getElementById('formaPagamento').value;
-            const mesaItens = dados[mesaSelecionadaCaixa].itens;
-
-            // --- ALIMENTA O HISTÓRICO PARA O ADMIN LER ---
-            const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
-            const _agora = new Date();
-            const _hoje  = _agora.getFullYear() + '-'
-                + String(_agora.getMonth() + 1).padStart(2, '0') + '-'
-                + String(_agora.getDate()).padStart(2, '0');
-            const novaVenda = {
-                mesa: mesaSelecionadaCaixa,
-                valorTotal: totalCalculadoMesa,
-                formaPagamento: forma,
-                data: _hoje,
-                itens: mesaItens
-            };
-            historico.push(novaVenda);
-            localStorage.setItem('burguerflow_historico', JSON.stringify(historico));
-            // ---------------------------------------------
-
-            // Reseta a mesa para o estado padrão
-            dados[mesaSelecionadaCaixa] = {
-                status: "Livre",
-                itens: []
-            };
-
-            salvarDadosMesas(dados);
-            exibirToastCaixa(`Pagamento da Mesa ${mesaSelecionadaCaixa} recebido via ${forma}! Comanda encerrada e mesa liberada. 💵`);
-        });
-
-        // Radar para atualizar a tela caso o garçom lance pedidos ou o cardápio mude em outra aba
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'burguerflow_mesas') {
-                renderizarPainelCaixa();
-                
-                const modalAberta = document.getElementById('modalDetalhesCaixa').classList.contains('show');
-                if (modalAberta && mesaSelecionadaCaixa) {
-                    const dados = obterDadosMesas();
-                    if (dados[mesaSelecionadaCaixa] && dados[mesaSelecionadaCaixa].status === "Ocupada") {
-                        const calculo = calcularMesa(dados[mesaSelecionadaCaixa].itens);
-                        totalCalculadoMesa = calculo.total;
-                        document.getElementById('modal-total-mesa').innerText = `R$ ${totalCalculadoMesa.toFixed(2).replace('.', ',')}`;
-                        document.getElementById('modal-lista-produtos').innerHTML = calculo.listaHTML;
-                    } else {
-                        modalDetalhes.hide();
-                    }
-                }
-            }
-            
-            if (e.key === 'burguerflow_precos') {
-                renderizarPainelCaixa();
-            }
-        });
-    </script>
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'burguerflow_mesas' || e.key === 'burguerflow_precos') {
+            renderizarPainelCaixa();
+        }
+    });
+</script>
 </body>
 </html>

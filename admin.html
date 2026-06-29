@@ -68,16 +68,20 @@
                             <i class="bi bi-egg-fried me-2 text-warning"></i> Ajustar Cardápio
                         </button>
 
-                        <button class="btn-nav-admin" onclick="abrirSecao('senhaAdmin', this)" id="btn-nav-senhaAdmin">
-                            <i class="bi bi-shield-lock me-2 text-primary"></i> Senha do Administrador
+                        <button class="btn-nav-admin" onclick="abrirSecao('mesas', this)" id="btn-nav-mesas">
+                            <i class="bi bi-grid-3x3-gap-fill me-2 text-danger"></i> Gerenciar Mesas
+                        </button>
+
+                        <button class="btn-nav-admin" onclick="abrirSecao('relatorio', this)" id="btn-nav-relatorio">
+                            <i class="bi bi-file-earmark-bar-graph-fill me-2 text-success"></i> Relatório de Vendas
                         </button>
 
                         <button class="btn-nav-admin" onclick="abrirSecao('senhaSistema', this)" id="btn-nav-senhaSistema">
                             <i class="bi bi-door-open me-2 text-secondary"></i> Senha do Sistema
                         </button>
 
-                        <button class="btn-nav-admin" onclick="abrirSecao('relatorio', this)" id="btn-nav-relatorio">
-                            <i class="bi bi-file-earmark-bar-graph-fill me-2 text-success"></i> Relatório de Vendas
+                        <button class="btn-nav-admin" onclick="abrirSecao('senhaAdmin', this)" id="btn-nav-senhaAdmin">
+                            <i class="bi bi-shield-lock me-2 text-primary"></i> Senha do Administrador
                         </button>
 
                     </div>
@@ -173,6 +177,38 @@
                         <button class="btn btn-dark w-100 py-2" onclick="salvarSenhaAdmin()">
                             <i class="bi bi-shield-lock-fill text-primary me-1"></i> Atualizar Senha do Administrador
                         </button>
+                    </div>
+
+                    <!-- SEÇÃO: MESAS -->
+                    <div class="painel-secao" id="secao-mesas">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-grid-3x3-gap-fill text-danger me-2"></i> Gerenciar Mesas</h5>
+
+                        <div class="row g-2 mb-4 p-3 bg-light rounded border align-items-end">
+                            <h6 class="fw-bold text-muted mb-2">Adicionar Nova Mesa:</h6>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Número / Nome da Mesa</label>
+                                <input type="text" id="input-nova-mesa" class="form-control form-control-sm" placeholder="Ex: 05, VIP, Varanda...">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-verde btn-sm w-100" onclick="adicionarMesaAdmin()">
+                                    <i class="bi bi-plus-circle-fill"></i> Adicionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-muted mb-2">Mesas Cadastradas:</h6>
+                        <div class="table-responsive" style="max-height:320px;overflow-y:auto;">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mesa</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Remover</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-mesas-corpo"></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- SEÇÃO: SENHA DO SISTEMA -->
@@ -327,10 +363,10 @@
                         <div class="table-responsive mb-3">
                             <table class="table table-sm table-hover align-middle">
                                 <thead class="table-dark">
-                                    <tr><th>Data</th><th>Mesa</th><th>Itens</th><th>Pagamento</th><th class="text-end">Total</th><th class="text-center">Detalhes</th></tr>
+                                    <tr><th>Data</th><th>Mesa</th><th>Comanda</th><th>Itens</th><th>Pagamento</th><th class="text-end">Total</th><th class="text-center">Detalhes</th></tr>
                                 </thead>
                                 <tbody id="rep-tabela-historico">
-                                    <tr><td colspan="6" class="text-center text-muted small py-3">Sem comandas no período</td></tr>
+                                    <tr><td colspan="7" class="text-center text-muted small py-3">Sem comandas no período</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -431,6 +467,7 @@
 
             // Ações de inicialização por seção
             if (secao === 'cardapio') renderizarTabelaCardapio();
+            if (secao === 'mesas')    renderizarTabelaMesas();
             if (secao === 'relatorio') { definirDatasFiltro(); carregarMetricasRelatorio(); }
         }
 
@@ -738,6 +775,78 @@
         }
 
         // ============================================================
+        //  GERENCIAR MESAS
+        // ============================================================
+        function obterDadosMesas() {
+            return JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
+        }
+
+        function renderizarTabelaMesas() {
+            const dados = obterDadosMesas();
+            const tbody = document.getElementById('tabela-mesas-corpo');
+            tbody.innerHTML = '';
+
+            const mesas = Object.keys(dados);
+            if (mesas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted small py-3">Nenhuma mesa cadastrada.</td></tr>`;
+                return;
+            }
+
+            mesas.forEach(n => {
+                const mesa   = dados[n];
+                const status = mesa.status || 'Livre';
+                const badge  = status === 'Livre'
+                    ? `<span class="badge bg-success">Livre</span>`
+                    : `<span class="badge bg-danger">Ocupada</span>`;
+                const podeDeletar = status === 'Livre';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>Mesa ${n}</strong></td>
+                        <td>${badge}</td>
+                        <td class="text-center">
+                            <button onclick="removerMesaAdmin('${n}')"
+                                class="btn btn-sm btn-link text-danger p-0"
+                                ${podeDeletar ? '' : 'disabled title="Não é possível remover uma mesa ocupada"'}>
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function adicionarMesaAdmin() {
+            const input = document.getElementById('input-nova-mesa');
+            const id    = input.value.trim().toUpperCase();
+            if (!id) {
+                exibirToastAdmin("Digite um número ou nome para a mesa.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+            const dados = obterDadosMesas();
+            if (dados[id]) {
+                exibirToastAdmin(`A mesa "${id}" já existe!`, "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+            dados[id] = { status: "Livre", comandas: [] };
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+            input.value = '';
+            renderizarTabelaMesas();
+            exibirToastAdmin(`Mesa ${id} adicionada com sucesso!`, "bi-plus-circle-fill text-success");
+        }
+
+        function removerMesaAdmin(id) {
+            const dados = obterDadosMesas();
+            if (!dados[id]) return;
+            if (dados[id].status === 'Ocupada') {
+                exibirToastAdmin("Não é possível remover uma mesa ocupada.", "bi-exclamation-triangle-fill text-danger");
+                return;
+            }
+            delete dados[id];
+            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+            renderizarTabelaMesas();
+            exibirToastAdmin(`Mesa ${id} removida.`, "bi-trash3-fill text-danger");
+        }
+
+        // ============================================================
         //  RELATÓRIO
         // ============================================================
         function definirDatasFiltro() {
@@ -907,15 +1016,17 @@
             // ── Histórico de comandas ──
             const tblHist = document.getElementById('rep-tabela-historico');
             if (vendas.length === 0) {
-                tblHist.innerHTML = `<tr><td colspan="6" class="text-center text-muted small py-3">Sem comandas no período</td></tr>`;
+                tblHist.innerHTML = `<tr><td colspan="7" class="text-center text-muted small py-3">Sem comandas no período</td></tr>`;
             } else {
                 tblHist.innerHTML = [...vendas].reverse().map((v, i) => {
                     const nomesItens = (v.itens || []).map(it => it.produto.split(" - ")[0]).join(', ');
                     const idCollapse = `comanda-${i}`;
+                    const numComanda = v.comanda ? `Comanda ${v.comanda}` : '—';
                     return `
                         <tr>
                             <td>${v.data}</td>
                             <td><strong>Mesa ${v.mesa}</strong></td>
+                            <td>${numComanda}</td>
                             <td class="text-muted small" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nomesItens}</td>
                             <td>${v.formaPagamento || '—'}</td>
                             <td class="text-end text-success fw-bold">${fmt(v.valorTotal)}</td>
@@ -926,7 +1037,7 @@
                             </td>
                         </tr>
                         <tr class="collapse" id="${idCollapse}">
-                            <td colspan="6" class="bg-light small px-4 py-2">
+                            <td colspan="7" class="bg-light small px-4 py-2">
                                 <strong>Itens:</strong> ${nomesItens || '—'}
                             </td>
                         </tr>`;
@@ -1099,14 +1210,15 @@
             vazio(3);
 
             // --- Histórico de Comandas (table-dark) ---
-            push(['Histórico de Comandas', '', '', '', ''],
-                 [ES.titulo, ES.vazio, ES.vazio, ES.vazio, ES.vazio], 14);
-            push(['Data', 'Mesa', 'Itens', 'Forma de Pagamento', 'Total'],
-                 [ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark], 16);
+            push(['Histórico de Comandas', '', '', '', '', ''],
+                 [ES.titulo, ES.vazio, ES.vazio, ES.vazio, ES.vazio, ES.vazio], 14);
+            push(['Data', 'Mesa', 'Comanda', 'Itens', 'Forma de Pagamento', 'Total'],
+                 [ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark], 16);
             [...vendas].reverse().forEach((v, i) => {
-                const itens = (v.itens||[]).map(it => it.produto.split(' - ')[0]).join(', ');
+                const itens   = (v.itens||[]).map(it => it.produto.split(' - ')[0]).join(', ');
+                const comanda = v.comanda ? 'Comanda ' + v.comanda : '—';
                 const e = i%2===0 ? ES.dadoPar : ES.dadoImpar;
-                push([v.data, 'Mesa '+v.mesa, itens, v.formaPagamento||'—', moeda(v.valorTotal)], [e,e,e,e,e]);
+                push([v.data, 'Mesa '+v.mesa, comanda, itens, v.formaPagamento||'—', moeda(v.valorTotal)], [e,e,e,e,e,e]);
             });
 
             // ── Monta a worksheet ──

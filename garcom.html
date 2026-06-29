@@ -9,385 +9,434 @@
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-    <div class="container py-4">
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-journal-text"></i> Gestão de Atendimento</h2>
-            <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar ao Início</a>
-        </div>
+<div class="container py-4">
 
-        <div class="card card-sistema p-3 mb-4 shadow-sm">
-            <h5 class="mb-3 text-muted">Selecione uma Mesa:</h5>
-            <div class="row g-2" id="mapa-mesas">
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-journal-text"></i> Gestão de Atendimento</h2>
+        <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">Voltar ao Início</a>
+    </div>
 
-        <div id="detalhe-mesa" class="card card-sistema p-4 d-none shadow">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5>Mesa <span id="num-mesa">--</span></h5>
+    <!-- MAPA DE MESAS -->
+    <div class="card card-sistema p-3 mb-4 shadow-sm">
+        <h5 class="mb-3 text-muted">Selecione uma Mesa:</h5>
+        <div class="row g-2" id="mapa-mesas"></div>
+    </div>
+
+    <!-- PAINEL DE DETALHE DA MESA -->
+    <div id="detalhe-mesa" class="card card-sistema p-4 d-none shadow">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Mesa <span id="num-mesa">--</span></h5>
+            <div class="d-flex gap-2 align-items-center">
                 <span id="status-badge" class="badge"></span>
+                <button onclick="adicionarComanda()" class="btn btn-sm btn-outline-dark" id="btn-nova-comanda" title="Nova Comanda">
+                    <i class="bi bi-plus-lg"></i> Nova Comanda
+                </button>
             </div>
-            <hr>
+        </div>
 
-            <div id="conteudo-mesa-dinamico" class="mb-4">
+        <!-- ABAS DE COMANDAS -->
+        <ul class="nav nav-tabs mb-3" id="tabs-comandas"></ul>
+
+        <!-- CONTEÚDO DA COMANDA ATIVA -->
+        <div id="conteudo-comanda-ativa"></div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div class="row g-2 mt-2" id="botoes-acao-mesa"></div>
+    </div>
+</div>
+
+<!-- MODAL ADICIONAR ITEM -->
+<div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-sistema">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle-fill text-warning"></i> Adicionar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
-            <div id="botoes-acao-mesa" class="row g-2">
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Produto</label>
+                    <select class="form-select" id="selectProduto"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Observações</label>
+                    <textarea class="form-control" id="txtObs" rows="2" placeholder="Ex: Sem cebola, ponto ao ponto..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarInclusaoItem()" data-bs-dismiss="modal">Lançar Item</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content card-sistema">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold" id="modalAdicionarItemLabel"><i class="bi bi-plus-circle-fill text-warning"></i> Adicionar Item ao Atendimento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Selecione o Produto</label>
-                        <select class="form-select" id="selectProduto">
-                            <!-- Carregado Dinamicamente via JS -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Observações de Preparo</label>
-                        <textarea class="form-control" rows="2" placeholder="Ex: Sem cebola, ponto ao ponto..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-verde btn-sm px-3" onclick="confirmarInclusaoItem()" data-bs-dismiss="modal">Lançar Item</button>
+<!-- MODAL CONFIRMAR REMOÇÃO -->
+<div class="modal fade" id="modalConfirmarRemocao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content card-sistema">
+            <div class="modal-body text-center pt-4">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3 d-block"></i>
+                <p class="mb-4">Remover <strong id="nome-item-remover"></strong> desta comanda?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Não</button>
+                    <button type="button" class="btn btn-sm btn-danger px-3" id="btnConfirmarExclusao">Sim, Remover</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="modalConfirmarRemocao" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content card-sistema">
-                <div class="modal-body text-center pt-4">
-                    <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3 d-block"></i>
-                    <p class="mb-4">Deseja realmente remover <strong id="nome-item-remover">item</strong> desta comanda?</p>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Não</button>
-                        <button type="button" class="btn btn-sm btn-danger px-3" id="btnConfirmarExclusao">Sim, Remover</button>
-                    </div>
-                </div>
+<!-- TOAST -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1060">
+    <div id="toastSistema" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle-fill text-warning"></i>
+                <span id="toastMensagem"></span>
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
+</div>
 
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
-        <div id="toastSistema" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    <i class="bi bi-info-circle-fill text-warning"></i>
-                    <span id="toastMensagem">Mensagem do sistema</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let mesaAtualSelecionada = "";
+    let comandaAtualIdx      = 0;   // índice da aba de comanda visível
+    let itemParaRemover      = null; // { comandaIdx, itemIdx }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        let mesaAtualSelecionada = "";
-        let itemIndexParaRemover = null;
-
-        // --- MODELO DO BANCO DE DADOS (LOCALSTORAGE) ---
-        if (!localStorage.getItem('burguerflow_mesas')) {
-            const estruturaInicial = {
-                "01": { status: "Livre", itens: [] },
-                "02": { status: "Livre", itens: [] },
-                "03": { status: "Livre", itens: [] },
-                "04": { status: "Livre", itens: [] }
-            };
-            localStorage.setItem('burguerflow_mesas', JSON.stringify(estruturaInicial));
-        }
-
-        function obterDadosMesas() {
-            return JSON.parse(localStorage.getItem('burguerflow_mesas'));
-        }
-
-        function salvarDadosMesas(dados) {
-            localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
-            renderizarMapaMesas(); 
-            if (mesaAtualSelecionada) {
-                atualizarPainelDetalhes(mesaAtualSelecionada);
-            }
-        }
-
-        function exibirToast(mensagem) {
-            document.getElementById('toastMensagem').innerText = message = mensagem;
-            const toastElement = document.getElementById('toastSistema');
-            const toast = new bootstrap.Toast(toastElement, { delay: 3500 });
-            toast.show();
-        }
-
-        // --- CARREGAR CARDÁPIO DINÂMICO ---
-        function carregarProdutosNoSelect() {
-            const cardapio = JSON.parse(localStorage.getItem('burguerflow_cardapio')) || [
-                "X-Burger Clássico - R$ 24,90",
-                "X-Salada Especial - R$ 26,90",
-                "Batata Frita M - R$ 12,00",
-                "Coca-Cola 350ml - R$ 6,00",
-                "Suco Natural - R$ 8,00"
-            ];
-
-            const select = document.getElementById('selectProduto');
-            if (select) {
-                select.innerHTML = "";
-                cardapio.forEach(item => {
-                    select.innerHTML += `<option>${item}</option>`;
-                });
-            }
-        }
-
-        // --- RENDERIZAR O MAPA DE MESAS DINAMICAMENTE ---
-        function renderizarMapaMesas() {
-            const dados = obterDadosMesas();
-            const mapaContainer = document.getElementById('mapa-mesas');
-            mapaContainer.innerHTML = ""; 
-
-            Object.keys(dados).forEach(numMesa => {
-                const mesa = dados[numMesa];
-                const classeBotao = mesa.status === 'Livre' ? 'btn-outline-dark' : 'btn-vermelho';
-                const classeSelecao = (numMesa === mesaAtualSelecionada) ? 'mesa-selecionada' : '';
-
-                mapaContainer.innerHTML += `
-                    <div class="col-3">
-                        <button onclick="verMesa('${numMesa}')" id="btn-mesa-${numMesa}" class="btn btn-mesa ${classeBotao} ${classeSelecao} w-100 py-3 btn-perfil">
-                            ${numMesa}
-                        </button>
-                    </div>
-                `;
+    // ── Inicializa e migra estrutura do localStorage ──
+    function inicializarMesas() {
+        let dados = JSON.parse(localStorage.getItem('burguerflow_mesas'));
+        if (!dados) {
+            dados = {};
+            ["01","02","03","04"].forEach(n => dados[n] = { status: "Livre", comandas: [] });
+        } else {
+            // Migra mesas no formato antigo (itens[] → comandas[])
+            Object.keys(dados).forEach(n => {
+                const mesa = dados[n];
+                if (!mesa.comandas) {
+                    if (mesa.itens && mesa.itens.length > 0) {
+                        mesa.comandas = [{ id: 1, itens: mesa.itens }];
+                    } else {
+                        mesa.comandas = [];
+                    }
+                    delete mesa.itens;
+                }
+                // Garante que todas as comandas têm itens como array
+                mesa.comandas.forEach(c => { if (!c.itens) c.itens = []; });
             });
         }
+        localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+    }
+    inicializarMesas();
 
-        // --- SELECIONAR UMA MESA ---
-        function verMesa(num) {
-            mesaAtualSelecionada = num;
+    function obterDadosMesas() {
+        return JSON.parse(localStorage.getItem('burguerflow_mesas'));
+    }
 
-            document.querySelectorAll('.btn-mesa').forEach(btn => btn.classList.remove('mesa-selecionada'));
-            const btnAtual = document.getElementById(`btn-mesa-${num}`);
-            if (btnAtual) btnAtual.classList.add('mesa-selecionada');
+    function salvarDadosMesas(dados) {
+        localStorage.setItem('burguerflow_mesas', JSON.stringify(dados));
+        renderizarMapaMesas();
+        if (mesaAtualSelecionada) atualizarPainelDetalhes(mesaAtualSelecionada);
+    }
 
-            atualizarPainelDetalhes(num);
+    function exibirToast(msg) {
+        document.getElementById('toastMensagem').innerText = msg;
+        new bootstrap.Toast(document.getElementById('toastSistema'), { delay: 3500 }).show();
+    }
+
+    function carregarProdutosNoSelect() {
+        const cardapio = JSON.parse(localStorage.getItem('burguerflow_cardapio')) || [
+            "X-Burger Clássico - R$ 24,90","X-Salada Especial - R$ 26,90",
+            "Batata Frita M - R$ 12,00","Coca-Cola 350ml - R$ 6,00","Suco Natural - R$ 8,00"
+        ];
+        const sel = document.getElementById('selectProduto');
+        if (sel) { sel.innerHTML = ""; cardapio.forEach(i => sel.innerHTML += `<option>${i}</option>`); }
+    }
+
+    // ── CALCULA O ALERTA DE UMA COMANDA ──
+    // Retorna 'pronto' > 'rascunho' > null (prioridade: pronto é mais urgente)
+    function alertaComanda(comanda) {
+        const itens = comanda.itens || [];
+        if (itens.some(it => it.status === 'Pronto')) return 'pronto';
+        if (itens.some(it => it.status === 'Rascunho')) return 'rascunho';
+        return null;
+    }
+
+    // ── RETORNA O ALERTA MAIS URGENTE DA MESA (entre todas as comandas) ──
+    function alertaMesa(mesa) {
+        if (mesa.status !== 'Ocupada') return null;
+        let temRascunho = false;
+        for (const c of (mesa.comandas || [])) {
+            const a = alertaComanda(c);
+            if (a === 'pronto')   return 'pronto';   // mais urgente, retorna já
+            if (a === 'rascunho') temRascunho = true;
+        }
+        return temRascunho ? 'rascunho' : null;
+    }
+
+    function dotHTML(nivel, classes) {
+        if (nivel === 'pronto')   return `<span class="badge bg-success ${classes}" title="Item pronto para entrega!" style="font-size:.6rem">●</span>`;
+        if (nivel === 'rascunho') return `<span class="badge bg-warning text-dark ${classes}" title="Itens aguardando envio" style="font-size:.6rem">●</span>`;
+        return '';
+    }
+
+    // ── MAPA DE MESAS ──
+    function renderizarMapaMesas() {
+        const dados = obterDadosMesas();
+        const cont  = document.getElementById('mapa-mesas');
+        cont.innerHTML = "";
+        Object.keys(dados).forEach(n => {
+            const mesa     = dados[n];
+            const classe   = mesa.status === 'Livre' ? 'btn-outline-dark' : 'btn-vermelho';
+            const selecion = n === mesaAtualSelecionada ? 'mesa-selecionada' : '';
+            const totalCom = (mesa.comandas || []).length;
+            const subLabel = mesa.status === 'Ocupada'
+                ? `<br><small style="font-size:.65rem">${totalCom} comanda${totalCom !== 1 ? 's' : ''}</small>` : '';
+            const alerta   = alertaMesa(mesa);
+            const dot      = dotHTML(alerta, 'ms-1');
+            cont.innerHTML += `
+                <div class="col-3">
+                    <button onclick="verMesa('${n}')" id="btn-mesa-${n}"
+                        class="btn btn-mesa ${classe} ${selecion} w-100 py-3 btn-perfil">
+                        ${n}${dot}${subLabel}
+                    </button>
+                </div>`;
+        });
+    }
+
+    // ── SELECIONAR MESA ──
+    function verMesa(num) {
+        mesaAtualSelecionada = num;
+        document.querySelectorAll('.btn-mesa').forEach(b => b.classList.remove('mesa-selecionada'));
+        const btn = document.getElementById(`btn-mesa-${num}`);
+        if (btn) btn.classList.add('mesa-selecionada');
+        comandaAtualIdx = 0;
+        atualizarPainelDetalhes(num);
+    }
+
+    // ── PAINEL PRINCIPAL ──
+    function atualizarPainelDetalhes(num) {
+        const dados = obterDadosMesas();
+        const mesa  = dados[num];
+
+        document.getElementById('detalhe-mesa').classList.remove('d-none');
+        document.getElementById('num-mesa').innerText = num;
+
+        const badge = document.getElementById('status-badge');
+        badge.innerText  = mesa.status;
+        badge.className  = mesa.status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
+
+        const btnNovaComanda = document.getElementById('btn-nova-comanda');
+        btnNovaComanda.classList.toggle('d-none', mesa.status === 'Livre');
+
+        const tabs    = document.getElementById('tabs-comandas');
+        const conteudo = document.getElementById('conteudo-comanda-ativa');
+        const botoes  = document.getElementById('botoes-acao-mesa');
+
+        if (mesa.status === 'Livre') {
+            tabs.innerHTML    = "";
+            conteudo.innerHTML = `<p class="text-muted fst-italic">Mesa disponível.</p>`;
+            botoes.innerHTML  = `
+                <div class="col-12">
+                    <button onclick="abrirMesaAtiva()" class="btn btn-verde btn-perfil w-100 py-2">
+                        <i class="bi bi-door-open"></i> Abrir Mesa
+                    </button>
+                </div>`;
+            return;
         }
 
-        // --- ATUALIZAR CONTEÚDO DOS DETALHES ---
-        function atualizarPainelDetalhes(num) {
-            const dados = obterDadosMesas();
-            const mesa = dados[num];
+        // Garante que o índice da aba é válido
+        if (comandaAtualIdx >= mesa.comandas.length) comandaAtualIdx = mesa.comandas.length - 1;
+        if (comandaAtualIdx < 0) comandaAtualIdx = 0;
 
-            document.getElementById('detalhe-mesa').classList.remove('d-none');
-            document.getElementById('num-mesa').innerText = num;
-            
-            const badge = document.getElementById('status-badge');
-            badge.innerText = mesa.status;
-            badge.className = mesa.status === 'Livre' ? 'badge bg-success' : 'badge bg-danger';
-            
-            const conteudo = document.getElementById('conteudo-mesa-dinamico');
-            const botoes = document.getElementById('botoes-acao-mesa');
+        // ── ABAS ──
+        tabs.innerHTML = mesa.comandas.map((c, i) => {
+            const nivel = alertaComanda(c);
+            const dot   = dotHTML(nivel, 'ms-1');
+            const ativo = i === comandaAtualIdx ? 'active' : '';
+            return `<li class="nav-item">
+                <button class="nav-link ${ativo}" onclick="selecionarComanda(${i})">
+                    Comanda ${c.id}${dot}
+                </button>
+            </li>`;
+        }).join('');
 
-            if (mesa.status === 'Livre') {
-                conteudo.innerHTML = `<p class="text-muted fst-italic">Esta mesa encontra-se vazia e disponível no momento.</p>`;
-                botoes.innerHTML = `
-                    <div class="col-12">
-                        <button onclick="abrirMesaAtiva()" class="btn btn-verde btn-perfil w-100 py-2">
-                            <i class="bi bi-door-open"></i> Abrir Mesa (Ocupar)
-                        </button>
-                    </div>
-                `;
-            } else {
-                if (mesa.itens.length === 0) {
-                    conteudo.innerHTML = `<p class="text-muted fst-italic">Nenhum item lançado nesta comanda ainda.</p>`;
-                } else {
-                    let itensHTML = `<h6 class="text-muted mb-3">Itens Lançados na Comanda:</h6><div class="list-group gap-2">`;
-                    
-                    mesa.itens.forEach((item, index) => {
-                        let badgeStatus = "";
-                        let textDecoration = "text-dark";
-                        let botaoEntregue = "";
-                        let botaoCancelar = "";
+        // ── CONTEÚDO DA COMANDA ATIVA ──
+        const comanda = mesa.comandas[comandaAtualIdx];
+        renderizarItensComanda(comanda, conteudo);
 
-                        if (item.status === "Rascunho") {
-                            badgeStatus  = `<span class="badge bg-secondary me-2"><i class="bi bi-clock"></i> A enviar</span>`;
-                            botaoCancelar = `<button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Cancelar item"><i class="bi bi-x-lg"></i></button>`;
-                        } else if (item.status === "Pendente") {
-                            badgeStatus  = `<span class="badge bg-warning text-dark me-2">Na fila da cozinha</span>`;
-                            botaoCancelar = `<button onclick="solicitarRemocaoItem(${index}, '${item.produto}')" class="btn btn-sm btn-outline-danger" title="Cancelar item"><i class="bi bi-x-lg"></i></button>`;
-                        } else if (item.status === "Em preparo") {
-                            badgeStatus = `<span class="badge bg-primary me-2">Em preparo</span>`;
-                        } else if (item.status === "Pronto") {
-                            const cat = item.categoria || "cozinha";
-                            // Balcão: visual de "Pendente" mas já pode entregar
-                            // Cozinha: visual de "Pronto!" sinalizando que a cozinha finalizou
-                            badgeStatus   = cat === "balcao"
-                                ? `<span class="badge bg-warning text-dark me-2">Pendente</span>`
-                                : `<span class="badge bg-success me-2"><i class="bi bi-bell-fill"></i> Pronto!</span>`;
-                            botaoEntregue = `<button onclick="marcarItemEntregue(${index})" class="btn btn-sm btn-success" title="Confirmar entrega na mesa"><i class="bi bi-check-lg"></i> Entregar</button>`;
-                        } else if (item.status === "Entregue") {
-                            badgeStatus    = `<span class="badge bg-secondary me-2"><i class="bi bi-check2-all"></i> Entregue</span>`;
-                            textDecoration = 'text-decoration-line-through text-muted';
-                        }
+        // ── BOTÕES ──
+        botoes.innerHTML = `
+            <div class="col-6">
+                <button class="btn btn-amarelo btn-perfil w-100 py-2"
+                    data-bs-toggle="modal" data-bs-target="#modalAdicionarItem">
+                    <i class="bi bi-plus-lg"></i> Adicionar Item
+                </button>
+            </div>
+            <div class="col-6">
+                <button onclick="enviarPedidoParaCozinha()" class="btn btn-verde btn-perfil w-100 py-2">
+                    <i class="bi bi-send-fill"></i> Enviar Pedido
+                </button>
+            </div>`;
+    }
 
-                        const obsHTML = item.obs ? `<br><small class="text-muted">Obs: ${item.obs}</small>` : '';
+    function renderizarItensComanda(comanda, container) {
+        if (!comanda || comanda.itens.length === 0) {
+            container.innerHTML = `<p class="text-muted fst-italic">Nenhum item lançado nesta comanda ainda.</p>`;
+            return;
+        }
 
-                        itensHTML += `
-                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
-                                <div>
-                                    ${badgeStatus}
-                                    <strong class="${textDecoration}">1x ${item.produto}</strong>
-                                    ${obsHTML}
-                                </div>
-                                <div class="btn-group">
-                                    ${botaoEntregue}
-                                    ${botaoCancelar}
-                                </div>
-                            </div>
-                        `;
-                    });
+        let html = `<div class="list-group gap-2">`;
+        comanda.itens.forEach((item, index) => {
+            let badgeStatus = "", textDecoration = "text-dark", botaoEntregue = "", botaoCancelar = "";
 
-                    itensHTML += `</div>`;
-                    conteudo.innerHTML = itensHTML;
-                }
-
-                botoes.innerHTML = `
-                    <div class="col-6">
-                        <button class="btn btn-amarelo btn-perfil w-100 py-2" data-bs-toggle="modal" data-bs-target="#modalAdicionarItem">
-                            <i class="bi bi-plus-lg"></i> Adicionar Item
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button onclick="enviarPedidoParaCozinha()" class="btn btn-verde btn-perfil w-100 py-2">
-                            <i class="bi bi-send-fill"></i> Enviar Pedido
-                        </button>
-                    </div>
-                `;
+            if (item.status === "Rascunho") {
+                badgeStatus   = `<span class="badge bg-secondary me-2"><i class="bi bi-clock"></i> A enviar</span>`;
+                botaoCancelar = `<button onclick="solicitarRemocaoItem(${index},'${item.produto.replace(/'/g,"\\'")}' )" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>`;
+            } else if (item.status === "Pendente") {
+                badgeStatus   = `<span class="badge bg-warning text-dark me-2">Na fila da cozinha</span>`;
+                botaoCancelar = `<button onclick="solicitarRemocaoItem(${index},'${item.produto.replace(/'/g,"\\'")}' )" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>`;
+            } else if (item.status === "Em preparo") {
+                badgeStatus = `<span class="badge bg-primary me-2">Em preparo</span>`;
+            } else if (item.status === "Pronto") {
+                const cat = item.categoria || "cozinha";
+                badgeStatus   = cat === "balcao"
+                    ? `<span class="badge bg-warning text-dark me-2">Pendente</span>`
+                    : `<span class="badge bg-success me-2"><i class="bi bi-bell-fill"></i> Pronto!</span>`;
+                botaoEntregue = `<button onclick="marcarItemEntregue(${index})" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Entregar</button>`;
+            } else if (item.status === "Entregue") {
+                badgeStatus    = `<span class="badge bg-secondary me-2"><i class="bi bi-check2-all"></i> Entregue</span>`;
+                textDecoration = 'text-decoration-line-through text-muted';
             }
-        }
 
-        // --- ABRIR UMA MESA ---
-        function abrirMesaAtiva() {
-            const dados = obterDadosMesas();
-            dados[mesaAtualSelecionada].status = "Ocupada";
-            dados[mesaAtualSelecionada].itens = []; 
-            
-            salvarDadosMesas(dados);
-            exibirToast(`Mesa ${mesaAtualSelecionada} aberta com sucesso! Lançamentos liberados.`);
-        }
+            const obsHTML = item.obs ? `<br><small class="text-muted">Obs: ${item.obs}</small>` : '';
+            html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light p-3 rounded shadow-sm">
+                    <div>
+                        ${badgeStatus}
+                        <strong class="${textDecoration}">1x ${item.produto}</strong>
+                        ${obsHTML}
+                    </div>
+                    <div class="btn-group">${botaoEntregue}${botaoCancelar}</div>
+                </div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+    }
 
-        // --- LANÇAR NOVO ITEM DO MODAL (SALVA COMO RASCUNHO) ---
-        function confirmarInclusaoItem() {
-            const select = document.getElementById('selectProduto');
-            const produtoSelecionado = select.options[select.selectedIndex].text;
-            const txtObs = document.querySelector('#modalAdicionarItem textarea');
-            const obs = txtObs ? txtObs.value.trim() : "";
+    function selecionarComanda(idx) {
+        comandaAtualIdx = idx;
+        atualizarPainelDetalhes(mesaAtualSelecionada);
+    }
 
-            if (!mesaAtualSelecionada) return;
+    // ── ABRIR MESA — cria a primeira comanda automaticamente ──
+    function abrirMesaAtiva() {
+        const dados = obterDadosMesas();
+        dados[mesaAtualSelecionada].status  = "Ocupada";
+        dados[mesaAtualSelecionada].comandas = [{ id: 1, itens: [] }];
+        comandaAtualIdx = 0;
+        salvarDadosMesas(dados);
+        exibirToast(`Mesa ${mesaAtualSelecionada} aberta! Comanda 1 criada.`);
+    }
 
-            const dados = obterDadosMesas();
-            
-            const novoItem = {
-                produto: produtoSelecionado,
-                status: "Rascunho",
-                obs: obs
-            };
+    // ── ADICIONAR NOVA COMANDA ──
+    function adicionarComanda() {
+        const dados   = obterDadosMesas();
+        const mesa    = dados[mesaAtualSelecionada];
+        const novoId  = mesa.comandas.length + 1;
+        mesa.comandas.push({ id: novoId, itens: [] });
+        comandaAtualIdx = mesa.comandas.length - 1;
+        salvarDadosMesas(dados);
+        exibirToast(`Comanda ${novoId} adicionada à Mesa ${mesaAtualSelecionada}!`);
+    }
 
-            dados[mesaAtualSelecionada].itens.push(novoItem);
-            salvarDadosMesas(dados);
-            
-            exibirToast(`"${produtoSelecionado}" adicionado à lista! Não se esqueça de Enviar o Pedido.`);
-            if(txtObs) txtObs.value = "";
-        }
+    // ── LANÇAR ITEM (salva na comanda ativa) ──
+    function confirmarInclusaoItem() {
+        if (!mesaAtualSelecionada) return;
+        const sel     = document.getElementById('selectProduto');
+        const produto = sel.options[sel.selectedIndex].text;
+        const obs     = document.getElementById('txtObs').value.trim();
 
-        // --- DISPARA OS ITENS DO RASCUNHO CONFORME CATEGORIA ---
-        function enviarPedidoParaCozinha() {
-            if (!mesaAtualSelecionada) return;
-            const dados      = obterDadosMesas();
-            const categorias = JSON.parse(localStorage.getItem('burguerflow_categorias')) || {};
+        const dados   = obterDadosMesas();
+        dados[mesaAtualSelecionada].comandas[comandaAtualIdx].itens.push({
+            produto, status: "Rascunho", obs
+        });
+        salvarDadosMesas(dados);
+        document.getElementById('txtObs').value = "";
+        exibirToast(`"${produto}" adicionado à Comanda ${dados[mesaAtualSelecionada].comandas[comandaAtualIdx].id}!`);
+    }
 
-            let enviouAlgo = false;
-            dados[mesaAtualSelecionada].itens.forEach(item => {
-                if (item.status === "Rascunho") {
-                    const nomeLimpo  = item.produto.split(" - ")[0].trim();
-                    const categoria  = categorias[nomeLimpo] || "cozinha";
-                    // Balcão: já sai pronto. Cozinha: vai para a fila.
-                    item.status      = categoria === "balcao" ? "Pronto" : "Pendente";
-                    item.categoria   = categoria;
-                    enviouAlgo       = true;
-                }
-            });
+    // ── ENVIAR PEDIDO (somente itens em Rascunho da comanda ativa) ──
+    function enviarPedidoParaCozinha() {
+        if (!mesaAtualSelecionada) return;
+        const dados      = obterDadosMesas();
+        const categorias = JSON.parse(localStorage.getItem('burguerflow_categorias')) || {};
+        const comanda    = dados[mesaAtualSelecionada].comandas[comandaAtualIdx];
 
-            if (enviouAlgo) {
-                salvarDadosMesas(dados);
-                exibirToast("Pedido enviado! Itens de balcão já estão prontos para entrega. 🧃🍔🔥");
-            } else {
-                exibirToast("Não há novos itens para enviar.");
-            }
-        }
-
-        // --- MUDAR STATUS DO ITEM PARA ENTREGUE ---
-        function marcarItemEntregue(index) {
-            const dados = obterDadosMesas();
-            const item = dados[mesaAtualSelecionada].itens[index];
-            item.status = "Entregue";
-            
-            salvarDadosMesas(dados);
-            exibirToast(`Status de "${item.produto}" alterado para: Entregue!`);
-        }
-
-        // --- ABRIR MODAL DE CONFIRMAÇÃO DE REMOÇÃO ---
-        function solicitarRemocaoItem(index, nomeItem) {
-            itemIndexParaRemover = index;
-            document.getElementById('nome-item-remover').innerText = `"${nomeItem}"`;
-            
-            const modalElement = document.getElementById('modalConfirmarRemocao');
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }   
-
-        // --- CONFIRMAR EXCLUSÃO DENTRO DO MODAL ---
-        document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
-            if (itemIndexParaRemover !== null) {
-                const dados = obterDadosMesas();
-                const nomeItem = dados[mesaAtualSelecionada].itens[itemIndexParaRemover].produto;
-                
-                dados[mesaAtualSelecionada].itens.splice(itemIndexParaRemover, 1);
-                salvarDadosMesas(dados);
-                
-                const modalElement = document.getElementById('modalConfirmarRemocao');
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                modal.hide();
-                
-                exibirToast(`O item "${nomeItem}" foi removido com sucesso.`);
-                itemIndexParaRemover = null;
+        let enviou = false;
+        comanda.itens.forEach(item => {
+            if (item.status === "Rascunho") {
+                const nome      = item.produto.split(" - ")[0].trim();
+                const categoria = categorias[nome] || "cozinha";
+                item.status     = categoria === "balcao" ? "Pronto" : "Pendente";
+                item.categoria  = categoria;
+                enviou = true;
             }
         });
 
-        window.onload = function() {
+        if (enviou) {
+            salvarDadosMesas(dados);
+            exibirToast("Pedido enviado! Itens de balcão já prontos para entrega. 🧃🍔🔥");
+        } else {
+            exibirToast("Não há novos itens para enviar.");
+        }
+    }
+
+    // ── ENTREGAR ITEM ──
+    function marcarItemEntregue(itemIdx) {
+        const dados  = obterDadosMesas();
+        const item   = dados[mesaAtualSelecionada].comandas[comandaAtualIdx].itens[itemIdx];
+        item.status  = "Entregue";
+        salvarDadosMesas(dados);
+        exibirToast(`"${item.produto}" marcado como entregue!`);
+    }
+
+    // ── REMOÇÃO DE ITEM ──
+    function solicitarRemocaoItem(itemIdx, nomeItem) {
+        itemParaRemover = { comandaIdx: comandaAtualIdx, itemIdx };
+        document.getElementById('nome-item-remover').innerText = `"${nomeItem}"`;
+        new bootstrap.Modal(document.getElementById('modalConfirmarRemocao')).show();
+    }
+
+    document.getElementById('btnConfirmarExclusao').addEventListener('click', function() {
+        if (itemParaRemover === null) return;
+        const dados   = obterDadosMesas();
+        const comanda = dados[mesaAtualSelecionada].comandas[itemParaRemover.comandaIdx];
+        const nome    = comanda.itens[itemParaRemover.itemIdx].produto;
+        comanda.itens.splice(itemParaRemover.itemIdx, 1);
+        salvarDadosMesas(dados);
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmarRemocao')).hide();
+        exibirToast(`"${nome}" removido.`);
+        itemParaRemover = null;
+    });
+
+    // ── INIT ──
+    window.onload = function() {
+        renderizarMapaMesas();
+        carregarProdutosNoSelect();
+        verMesa("01");
+    };
+
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'burguerflow_mesas') {
             renderizarMapaMesas();
-            carregarProdutosNoSelect();
-            // Seleciona a mesa 01 por padrão ao abrir a tela
-            verMesa("01");
-        };
-
-        // Escuta alterações vindas do Admin/Cozinha/Caixa e atualiza tudo em tempo real
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'burguerflow_mesas') {
-                renderizarMapaMesas();
-                if (mesaAtualSelecionada) {
-                    atualizarPainelDetalhes(mesaAtualSelecionada);
-                }
-            }
-            if (e.key === 'burguerflow_cardapio') {
-                carregarProdutosNoSelect();
-            }
-        });
-    </script>
+            if (mesaAtualSelecionada) atualizarPainelDetalhes(mesaAtualSelecionada);
+        }
+        if (e.key === 'burguerflow_cardapio') carregarProdutosNoSelect();
+    });
+</script>
 </body>
 </html>
