@@ -7,6 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="estilo.css">
+    <style>
+        @keyframes fadeInDetalhe {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim-detalhe {
+            animation: fadeInDetalhe 0.35s ease-out;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
@@ -207,7 +216,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>Mesa ${numMesa}</strong></td>
-                        <td>Comanda ${comanda.id}</td>
+                        <td>${comanda.nome || 'Comanda ' + comanda.id}</td>
                         <td>${badge}</td>
                         <td class="fw-bold text-success">R$ ${calc.total.toFixed(2).replace('.',',')}</td>
                         <td class="text-center">
@@ -239,7 +248,7 @@
         totalCalculado = calc.total;
 
         document.getElementById('modal-num-mesa').innerText    = numMesa;
-        document.getElementById('modal-num-comanda').innerText = comanda.id;
+        document.getElementById('modal-num-comanda').innerText = comanda.nome || comanda.id;
         document.getElementById('modal-total-mesa').innerText  = `R$ ${totalCalculado.toFixed(2).replace('.',',')}`;
         document.getElementById('modal-lista-produtos').innerHTML = calc.listaHTML;
 
@@ -262,6 +271,13 @@
             btnBaixa.disabled = false;
         }
 
+        // Aplica animação de entrada suave no conteúdo do modal
+        const corpoModal = document.querySelector('#modalDetalhesCaixa .modal-body');
+        corpoModal.classList.remove('anim-detalhe');
+        // Força reflow para a animação rodar de novo a cada abertura
+        void corpoModal.offsetWidth;
+        corpoModal.classList.add('anim-detalhe');
+
         modalDetalhes.show();
     }
 
@@ -271,7 +287,7 @@
             const dados   = obterDadosMesas();
             const comanda = dados[selecionado.mesa].comandas[selecionado.cidx];
             document.getElementById('confirm-num-mesa').innerText    = selecionado.mesa;
-            document.getElementById('confirm-num-comanda').innerText = comanda.id;
+            document.getElementById('confirm-num-comanda').innerText = comanda.nome || comanda.id;
             document.getElementById('confirm-total-mesa').innerText  = `R$ ${totalCalculado.toFixed(2).replace('.',',')}`;
             modalPagamento.show();
         }, 300);
@@ -291,14 +307,23 @@
             + String(agora.getMonth()+1).padStart(2,'0') + '-'
             + String(agora.getDate()).padStart(2,'0');
 
+        // Congela o preço pago de cada item no momento do fechamento
+        // (evita que edições futuras no cardápio afetem vendas já fechadas)
+        const itensComPreco = comanda.itens.map(item => ({
+            ...item,
+            precoUnitario: obterPrecoDoProduto(item.produto)
+        }));
+
         const historico = JSON.parse(localStorage.getItem('burguerflow_historico')) || [];
         historico.push({
             mesa,
             comanda: comanda.id,
+            nomeComanda: comanda.nome || null,
+            sessaoId: dados[mesa].sessaoId || null,
             valorTotal: totalCalculado,
             formaPagamento: forma,
             data: hoje,
-            itens: comanda.itens
+            itens: itensComPreco
         });
         localStorage.setItem('burguerflow_historico', JSON.stringify(historico));
 
@@ -311,7 +336,7 @@
         }
 
         salvarDadosMesas(dados);
-        exibirToastCaixa(`Comanda ${comanda.id} da Mesa ${mesa} fechada via ${forma}! 💵`);
+        exibirToastCaixa(`${comanda.nome || 'Comanda ' + comanda.id} da Mesa ${mesa} fechada via ${forma}! 💵`);
         selecionado = null;
     });
 

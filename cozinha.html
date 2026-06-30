@@ -116,7 +116,7 @@
                             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                                 <div>
                                     <strong class="fs-5">Mesa ${numMesa}</strong>
-                                    <span class="ms-2 badge bg-secondary">Comanda ${comanda.id}</span>
+                                    <span class="ms-2 badge bg-secondary">${comanda.nome || 'Comanda ' + comanda.id}</span>
                                 </div>
                                 <span class="badge ${badgeClass} fw-bold">${badgeText}</span>
                             </div>
@@ -163,7 +163,7 @@
         selecionadoParaPronto = { mesa: numMesa, cidx };
         const dados   = obterDadosMesas();
         const comanda = dados[numMesa].comandas[cidx];
-        document.getElementById('nome-mesa-cozinha').innerText = `Mesa ${numMesa} / Comanda ${comanda.id}`;
+        document.getElementById('nome-mesa-cozinha').innerText = `Mesa ${numMesa} / ${comanda.nome || 'Comanda ' + comanda.id}`;
         new bootstrap.Modal(document.getElementById('modalConfirmarCozinha')).show();
     }
 
@@ -180,7 +180,7 @@
         });
 
         salvarDadosMesas(dados);
-        exibirToastCozinha(`Mesa ${mesa} / Comanda ${comanda.id} — pronto! Aguardando garçom.`);
+        exibirToastCozinha(`Mesa ${mesa} / ${comanda.nome || 'Comanda ' + comanda.id} — pronto! Aguardando garçom.`);
         selecionadoParaPronto = null;
     });
 

@@ -45,6 +45,26 @@
     </div>
 </div>
 
+<!-- MODAL RENOMEAR COMANDA -->
+<div class="modal fade" id="modalRenomearComanda" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content card-sistema">
+            <div class="modal-header border-bottom-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-pencil-fill text-primary"></i> Nome da Comanda</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label small fw-bold">Ex: nome do cliente, "Janela", "Ana"...</label>
+                <input type="text" id="input-nome-comanda" class="form-control" placeholder="Nome ou referência da comanda" maxlength="30">
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-verde btn-sm px-3" onclick="salvarNomeComanda()" data-bs-dismiss="modal">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL ADICIONAR ITEM -->
 <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -105,6 +125,39 @@
     let mesaAtualSelecionada = "";
     let comandaAtualIdx      = 0;   // índice da aba de comanda visível
     let itemParaRemover      = null; // { comandaIdx, itemIdx }
+
+    // ── Inicializa cardápio, preços e categorias (mesmo padrão usado no admin) ──
+    // Garante que essas chaves existam mesmo se o admin nunca foi aberto antes
+    function inicializarCardapioBase() {
+        const precosPadrao = {
+            "X-Burger Clássico": 24.90,
+            "X-Salada Especial": 26.90,
+            "Batata Frita M": 12.00,
+            "Coca-Cola 350ml": 6.00,
+            "Suco Natural": 8.00
+        };
+        const categoriasPadrao = {
+            "X-Burger Clássico": "cozinha",
+            "X-Salada Especial": "cozinha",
+            "Batata Frita M":    "cozinha",
+            "Coca-Cola 350ml":   "balcao",
+            "Suco Natural":      "cozinha"
+        };
+        const cardapioPadrao = [
+            "X-Burger Clássico - R$ 24,90",
+            "X-Salada Especial - R$ 26,90",
+            "Batata Frita M - R$ 12,00",
+            "Coca-Cola 350ml - R$ 6,00",
+            "Suco Natural - R$ 8,00"
+        ];
+        if (!localStorage.getItem('burguerflow_precos'))
+            localStorage.setItem('burguerflow_precos', JSON.stringify(precosPadrao));
+        if (!localStorage.getItem('burguerflow_cardapio'))
+            localStorage.setItem('burguerflow_cardapio', JSON.stringify(cardapioPadrao));
+        if (!localStorage.getItem('burguerflow_categorias'))
+            localStorage.setItem('burguerflow_categorias', JSON.stringify(categoriasPadrao));
+    }
+    inicializarCardapioBase();
 
     // ── Inicializa e migra estrutura do localStorage ──
     function inicializarMesas() {
@@ -257,9 +310,14 @@
             const nivel = alertaComanda(c);
             const dot   = dotHTML(nivel, 'ms-1');
             const ativo = i === comandaAtualIdx ? 'active' : '';
-            return `<li class="nav-item">
+            const label = c.nome ? `${c.nome}` : `Comanda ${c.id}`;
+            return `<li class="nav-item d-flex align-items-center">
                 <button class="nav-link ${ativo}" onclick="selecionarComanda(${i})">
-                    Comanda ${c.id}${dot}
+                    ${label}${dot}
+                </button>
+                <button class="btn btn-sm btn-link text-muted px-1" title="Renomear comanda"
+                    onclick="abrirRenomearComanda(${i})">
+                    <i class="bi bi-pencil-fill" style="font-size:.75rem"></i>
                 </button>
             </li>`;
         }).join('');
@@ -332,10 +390,38 @@
         atualizarPainelDetalhes(mesaAtualSelecionada);
     }
 
+    // ── RENOMEAR COMANDA ──
+    let comandaParaRenomear = null;
+
+    function abrirRenomearComanda(idx) {
+        comandaParaRenomear = idx;
+        const dados   = obterDadosMesas();
+        const comanda = dados[mesaAtualSelecionada].comandas[idx];
+        document.getElementById('input-nome-comanda').value = comanda.nome || '';
+        new bootstrap.Modal(document.getElementById('modalRenomearComanda')).show();
+        setTimeout(() => document.getElementById('input-nome-comanda').focus(), 300);
+    }
+
+    function salvarNomeComanda() {
+        if (comandaParaRenomear === null) return;
+        const novoNome = document.getElementById('input-nome-comanda').value.trim();
+        const dados    = obterDadosMesas();
+        const comanda  = dados[mesaAtualSelecionada].comandas[comandaParaRenomear];
+        comanda.nome   = novoNome || null; // string vazia volta a usar "Comanda N"
+        salvarDadosMesas(dados);
+        exibirToast(novoNome ? `Comanda renomeada para "${novoNome}"!` : `Nome removido — voltou a ser "Comanda ${comanda.id}".`);
+        comandaParaRenomear = null;
+    }
+
     // ── ABRIR MESA — cria a primeira comanda automaticamente ──
     function abrirMesaAtiva() {
         const dados = obterDadosMesas();
-        dados[mesaAtualSelecionada].status  = "Ocupada";
+        // Gera um ID único para esta "sessão de ocupação" da mesa
+        // Garante que comandas da mesma abertura fiquem agrupadas no relatório,
+        // mesmo que a mesa seja aberta novamente outro dia/horário.
+        const sessaoId = 'sessao_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        dados[mesaAtualSelecionada].status   = "Ocupada";
+        dados[mesaAtualSelecionada].sessaoId = sessaoId;
         dados[mesaAtualSelecionada].comandas = [{ id: 1, itens: [] }];
         comandaAtualIdx = 0;
         salvarDadosMesas(dados);

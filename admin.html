@@ -31,6 +31,33 @@
         }
         .btn-nav-admin.ativo i { color: #fff !important; }
 
+        /* Animação da seta de expandir/colapsar no histórico do relatório */
+        .chevron-toggle {
+            transition: transform 0.25s ease;
+            display: inline-block;
+        }
+        .chevron-toggle.rotacionado {
+            transform: rotate(180deg);
+        }
+        .sub-tabela-comandas {
+            background-color: #f8f9fa;
+        }
+
+        /* Suaviza a transição de altura do collapse (Bootstrap já anima height,
+           aqui reforçamos com fade na opacidade para ficar mais perceptível) */
+        .collapse.collapsing {
+            transition: height 0.3s ease;
+        }
+        .collapse {
+            transition: opacity 0.25s ease;
+        }
+        .collapse:not(.show) {
+            opacity: 0;
+        }
+        .collapse.show {
+            opacity: 1;
+        }
+
         #painel-conteudo {
             min-height: 420px;
         }
@@ -359,14 +386,14 @@
                         </div>
 
                         <!-- HISTÓRICO DE COMANDAS -->
-                        <h6 class="fw-bold text-muted mb-2">Histórico de Comandas</h6>
+                        <h6 class="fw-bold text-muted mb-2">Histórico de Atendimentos</h6>
                         <div class="table-responsive mb-3">
                             <table class="table table-sm table-hover align-middle">
                                 <thead class="table-dark">
-                                    <tr><th>Data</th><th>Mesa</th><th>Comanda</th><th>Itens</th><th>Pagamento</th><th class="text-end">Total</th><th class="text-center">Detalhes</th></tr>
+                                    <tr><th>Data</th><th>Mesa</th><th class="text-center">Comandas</th><th class="text-end">Total Consumido</th><th class="text-center">Detalhes</th></tr>
                                 </thead>
                                 <tbody id="rep-tabela-historico">
-                                    <tr><td colspan="7" class="text-center text-muted small py-3">Sem comandas no período</td></tr>
+                                    <tr><td colspan="5" class="text-center text-muted small py-3">Sem comandas no período</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -918,7 +945,8 @@
                 // Itens
                 (v.itens || []).forEach(item => {
                     const nome  = item.produto.split(" - ")[0].trim();
-                    const preco = precos[nome] || 0;
+                    // Usa o preço congelado no momento da venda; se não existir (vendas antigas), recorre ao cardápio atual
+                    const preco = item.precoUnitario != null ? item.precoUnitario : (precos[nome] || 0);
                     const cat   = categorias[nome] || item.categoria || "cozinha";
                     if (!contagemProd[nome]) contagemProd[nome] = { qtd: 0, receita: 0, categoria: cat };
                     contagemProd[nome].qtd++;
@@ -1013,34 +1041,96 @@
                     </tr>`).join('');
             }
 
-            // ── Histórico de comandas ──
+            // ── Histórico de Atendimentos (agrupado por sessão de ocupação da mesa) ──
             const tblHist = document.getElementById('rep-tabela-historico');
             if (vendas.length === 0) {
-                tblHist.innerHTML = `<tr><td colspan="7" class="text-center text-muted small py-3">Sem comandas no período</td></tr>`;
+                tblHist.innerHTML = `<tr><td colspan="5" class="text-center text-muted small py-3">Sem comandas no período</td></tr>`;
             } else {
-                tblHist.innerHTML = [...vendas].reverse().map((v, i) => {
-                    const nomesItens = (v.itens || []).map(it => it.produto.split(" - ")[0]).join(', ');
-                    const idCollapse = `comanda-${i}`;
-                    const numComanda = v.comanda ? `Comanda ${v.comanda}` : '—';
-                    return `
+                // Agrupa por sessaoId (cada abertura de mesa gera um ID único).
+                // Vendas antigas sem sessaoId (antes dessa funcionalidade existir)
+                // caem no fallback "data|mesa", que é o melhor possível sem o ID.
+                const grupos = {};
+                vendas.forEach(v => {
+                    const chave = v.sessaoId || ('legado|' + v.data + '|' + v.mesa);
+                    if (!grupos[chave]) grupos[chave] = { data: v.data, mesa: v.mesa, comandas: [] };
+                    grupos[chave].comandas.push(v);
+                });
+
+                // Ordena os grupos do mais recente para o mais antigo
+                const listaGrupos = Object.values(grupos).sort((a, b) => b.data.localeCompare(a.data));
+
+                tblHist.innerHTML = listaGrupos.map((grupo, gi) => {
+                    const totalGrupo  = grupo.comandas.reduce((s, c) => s + c.valorTotal, 0);
+                    const qtdComandas = grupo.comandas.length;
+                    const idGrupo     = `grupo-${gi}`;
+
+                    // Linha principal (Data / Mesa / Qtd Comandas / Total)
+                    let html = `
                         <tr>
-                            <td>${v.data}</td>
-                            <td><strong>Mesa ${v.mesa}</strong></td>
-                            <td>${numComanda}</td>
-                            <td class="text-muted small" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nomesItens}</td>
-                            <td>${v.formaPagamento || '—'}</td>
-                            <td class="text-end text-success fw-bold">${fmt(v.valorTotal)}</td>
+                            <td>${grupo.data}</td>
+                            <td><strong>Mesa ${grupo.mesa}</strong></td>
+                            <td class="text-center">${qtdComandas} comanda${qtdComandas !== 1 ? 's' : ''}</td>
+                            <td class="text-end text-success fw-bold">${fmt(totalGrupo)}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#${idCollapse}">
-                                    <i class="bi bi-chevron-down"></i>
+                                <button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#${idGrupo}"
+                                    onclick="document.getElementById('chev-${idGrupo}').classList.toggle('rotacionado')">
+                                    <i class="bi bi-chevron-down chevron-toggle" id="chev-${idGrupo}"></i>
                                 </button>
                             </td>
                         </tr>
-                        <tr class="collapse" id="${idCollapse}">
-                            <td colspan="7" class="bg-light small px-4 py-2">
-                                <strong>Itens:</strong> ${nomesItens || '—'}
+                        <tr>
+                            <td colspan="5" class="p-0 border-0">
+                                <div class="collapse" id="${idGrupo}">
+                                    <div class="sub-tabela-comandas px-3 py-3">
+                                        <table class="table table-sm table-bordered align-middle mb-0 bg-white">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th>Comanda</th>
+                                                    <th>Forma de Pagamento</th>
+                                                    <th class="text-end">Total</th>
+                                                    <th class="text-center">Itens</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+
+                    // Sub-linhas: cada comanda dentro do grupo
+                    grupo.comandas.forEach((c, ci) => {
+                        const nomeComanda = c.nomeComanda || ('Comanda ' + (c.comanda || '—'));
+                        const idItens     = `itens-${gi}-${ci}`;
+                        const listaItens  = (c.itens || []).map(it => it.produto.split(' - ')[0]).join(', ') || '—';
+
+                        html += `
+                                                <tr>
+                                                    <td>${nomeComanda}</td>
+                                                    <td>${c.formaPagamento || '—'}</td>
+                                                    <td class="text-end text-success fw-bold">${fmt(c.valorTotal)}</td>
+                                                    <td class="text-center">
+                                                        <button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#${idItens}"
+                                                            onclick="document.getElementById('chev-${idItens}').classList.toggle('rotacionado')">
+                                                            <i class="bi bi-chevron-down chevron-toggle" id="chev-${idItens}"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4" class="p-0 border-0">
+                                                        <div class="collapse" id="${idItens}">
+                                                            <div class="bg-light small px-3 py-2">
+                                                                <strong>Itens consumidos:</strong> ${listaItens}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>`;
+                    });
+
+                    html += `
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </td>
                         </tr>`;
+
+                    return html;
                 }).join('');
             }
         }
@@ -1072,7 +1162,7 @@
                 contPagto[f].total += v.valorTotal;
                 (v.itens || []).forEach(item => {
                     const nome  = item.produto.split(' - ')[0].trim();
-                    const preco = precos[nome] || 0;
+                    const preco = item.precoUnitario != null ? item.precoUnitario : (precos[nome] || 0);
                     const cat   = categorias[nome] || item.categoria || 'cozinha';
                     if (!contProd[nome]) contProd[nome] = { qtd: 0, receita: 0, categoria: cat };
                     contProd[nome].qtd++;
@@ -1216,7 +1306,7 @@
                  [ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark, ES.cabDark], 16);
             [...vendas].reverse().forEach((v, i) => {
                 const itens   = (v.itens||[]).map(it => it.produto.split(' - ')[0]).join(', ');
-                const comanda = v.comanda ? 'Comanda ' + v.comanda : '—';
+                const comanda = v.nomeComanda || (v.comanda ? 'Comanda ' + v.comanda : '—');
                 const e = i%2===0 ? ES.dadoPar : ES.dadoImpar;
                 push([v.data, 'Mesa '+v.mesa, comanda, itens, v.formaPagamento||'—', moeda(v.valorTotal)], [e,e,e,e,e,e]);
             });
