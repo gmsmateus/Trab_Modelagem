@@ -164,8 +164,17 @@
         let dados = JSON.parse(localStorage.getItem('burguerflow_mesas'));
         if (!dados) {
             dados = {};
-            ["01","02","03","04"].forEach(n => dados[n] = { status: "Livre", comandas: [] });
+            ["1","2","3","4"].forEach(n => dados[n] = { status: "Livre", comandas: [] });
         } else {
+            // Migra chaves antigas com zero à esquerda ("01" → "1")
+            const chavesAntigas = Object.keys(dados).filter(k => /^0\d+$/.test(k));
+            chavesAntigas.forEach(k => {
+                const novaChave = String(parseInt(k, 10));
+                if (!dados[novaChave]) {
+                    dados[novaChave] = dados[k];
+                    delete dados[k];
+                }
+            });
             // Migra mesas no formato antigo (itens[] → comandas[])
             Object.keys(dados).forEach(n => {
                 const mesa = dados[n];
@@ -241,7 +250,9 @@
         const dados = obterDadosMesas();
         const cont  = document.getElementById('mapa-mesas');
         cont.innerHTML = "";
-        Object.keys(dados).forEach(n => {
+        // Ordena numericamente (Object.keys não garante ordem correta para números em string)
+        const chavesOrdenadas = Object.keys(dados).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+        chavesOrdenadas.forEach(n => {
             const mesa     = dados[n];
             const classe   = mesa.status === 'Livre' ? 'btn-outline-dark' : 'btn-vermelho';
             const selecion = n === mesaAtualSelecionada ? 'mesa-selecionada' : '';
@@ -254,7 +265,7 @@
                 <div class="col-3">
                     <button onclick="verMesa('${n}')" id="btn-mesa-${n}"
                         class="btn btn-mesa ${classe} ${selecion} w-100 py-3 btn-perfil">
-                        ${n}${dot}${subLabel}
+                        Mesa ${n}${dot}${subLabel}
                     </button>
                 </div>`;
         });
@@ -513,7 +524,7 @@
     window.onload = function() {
         renderizarMapaMesas();
         carregarProdutosNoSelect();
-        verMesa("01");
+        verMesa("1");
     };
 
     window.addEventListener('storage', function(e) {

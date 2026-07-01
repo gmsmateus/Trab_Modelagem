@@ -26,7 +26,17 @@
     </div>
 
     <div class="card card-sistema shadow-sm p-4">
-        <h5 class="mb-4 text-muted">Comandas em Aberto / Aguardando Pagamento</h5>
+        <h5 class="mb-3 text-muted">Comandas em Aberto / Aguardando Pagamento</h5>
+        <div class="mb-3">
+            <div class="input-group" style="max-width:480px">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" id="filtro-caixa" class="form-control"
+                    placeholder="Filtrar por mesa (ex: 3) ou comanda (ex: Ana)">
+                <button class="btn btn-outline-secondary" type="button" onclick="limparFiltroCaixa()" title="Limpar filtro">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
@@ -137,7 +147,14 @@
         modalDetalhes  = new bootstrap.Modal(document.getElementById('modalDetalhesCaixa'));
         modalPagamento = new bootstrap.Modal(document.getElementById('modalProcessarPagamento'));
         renderizarPainelCaixa();
+
+        document.getElementById('filtro-caixa').addEventListener('input', renderizarPainelCaixa);
     });
+
+    function limparFiltroCaixa() {
+        document.getElementById('filtro-caixa').value = '';
+        renderizarPainelCaixa();
+    }
 
     function obterDadosMesas() {
         const dados = JSON.parse(localStorage.getItem('burguerflow_mesas')) || {};
@@ -190,18 +207,31 @@
     }
 
     function renderizarPainelCaixa() {
-        const dados = obterDadosMesas();
-        const tbody = document.getElementById('tabela-caixa-corpo');
+        const dados  = obterDadosMesas();
+        const tbody  = document.getElementById('tabela-caixa-corpo');
+        const filtro = (document.getElementById('filtro-caixa').value || '').trim().toLowerCase();
         tbody.innerHTML = "";
         let temLinha = false;
 
-        Object.keys(dados).forEach(numMesa => {
+        // Ordena mesas numericamente para exibição consistente
+        const chavesOrdenadas = Object.keys(dados).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+        chavesOrdenadas.forEach(numMesa => {
             const mesa = dados[numMesa];
             if (mesa.status !== "Ocupada") return;
 
             (mesa.comandas || []).forEach((comanda, cidx) => {
                 // Só mostra comandas que ainda têm itens (não foram fechadas)
                 if (comanda.itens.length === 0) return;
+
+                // Aplica o filtro: por número da mesa ou por nome/id da comanda
+                if (filtro) {
+                    const nomeComanda = (comanda.nome || ('comanda ' + comanda.id)).toLowerCase();
+                    const casaMesa    = numMesa.toLowerCase().includes(filtro) || ('mesa ' + numMesa).toLowerCase().includes(filtro);
+                    const casaComanda = nomeComanda.includes(filtro);
+                    if (!casaMesa && !casaComanda) return;
+                }
+
                 temLinha = true;
 
                 const calc = calcularComanda(comanda.itens);
@@ -230,11 +260,14 @@
         });
 
         if (!temLinha) {
+            const mensagem = filtro
+                ? `Nenhuma comanda encontrada para "${filtro}".`
+                : 'Nenhuma comanda em aberto no momento.';
             tbody.innerHTML = `
                 <tr>
                     <td colspan="5" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
-                        Nenhuma comanda em aberto no momento.
+                        ${mensagem}
                     </td>
                 </tr>`;
         }
@@ -306,6 +339,7 @@
         const hoje  = agora.getFullYear() + '-'
             + String(agora.getMonth()+1).padStart(2,'0') + '-'
             + String(agora.getDate()).padStart(2,'0');
+        const horaAgora = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
 
         // Congela o preço pago de cada item no momento do fechamento
         // (evita que edições futuras no cardápio afetem vendas já fechadas)
@@ -320,6 +354,7 @@
             comanda: comanda.id,
             nomeComanda: comanda.nome || null,
             sessaoId: dados[mesa].sessaoId || null,
+            hora: horaAgora,
             valorTotal: totalCalculado,
             formaPagamento: forma,
             data: hoje,
