@@ -4,6 +4,49 @@ O **BurguerFlow** é um protótipo de sistema de gestão interna desenvolvido pa
 
 ---
 
+## ▶️ Como Executar
+
+### Pré-requisitos
+Nenhuma instalação necessária. O sistema roda diretamente no navegador.
+
+### Passos
+1. Clone o repositório:
+   git clone https://github.com/seu-usuario/burguerflow.git
+
+2. Abra o arquivo `index.html` diretamente no navegador
+   (arraste o arquivo para o Chrome/Firefox, ou clique duas vezes nele)
+
+### Recomendado: Live Server (VS Code)
+Para melhor experiência durante o desenvolvimento ou demonstração:
+1. Instale a extensão **Live Server** no VS Code
+2. Clique com botão direito em `index.html`
+3. Selecione **"Open with Live Server"**
+4. O sistema abrirá em `http://127.0.0.1:5500`
+
+### Observação sobre múltiplos terminais
+Para simular o ambiente real (garçom + cozinha + caixa simultâneos),
+abra cada tela em uma aba separada do mesmo navegador. A sincronização
+entre telas funciona via `localStorage`, que é compartilhado entre abas
+da mesma origem.
+
+--- 
+
+## 🔐 Instruções de Acesso
+
+### Senha do Sistema
+Solicitada na tela inicial (`index.html`) para todos os usuários.
+- **Senha padrão:** `1234`
+- Pode ser alterada pelo administrador em: **Painel Admin → Senha do Sistema**.
+
+### Senha do Administrador
+Solicitada na tela de login administrativo (`login-admin.html`), acessível pelo ícone de engrenagem ⚙️ no dashboard.
+- **Senha padrão:** `1234`
+- Pode ser alterada em: **Painel Admin → Senha do Administrador**.
+
+> ⚠️ As senhas são armazenadas localmente no navegador (`localStorage`). Ao limpar os dados do navegador, voltam para o padrão `1234`.
+
+---
+
 ## 🚀 Funcionalidades
 
 ### 🪑 Gestão de Mesas e Comandas
@@ -41,27 +84,10 @@ O **BurguerFlow** é um protótipo de sistema de gestão interna desenvolvido pa
 - **Senhas:** Gerenciamento separado da senha do sistema (acesso geral) e da senha do administrador.
 
 ### 🔄 Ciclo de Vida de um Pedido
-```
+
 Rascunho → Pendente → Em preparo → Pronto → Entregue
                 ↑
          (Balcão pula direto para Pronto)
-```
-
----
-
-## 🔐 Instruções de Acesso
-
-### Senha do Sistema
-Solicitada na tela inicial (`index.html`) para todos os usuários.
-- **Senha padrão:** `1234`
-- Pode ser alterada pelo administrador em: **Painel Admin → Senha do Sistema**.
-
-### Senha do Administrador
-Solicitada na tela de login administrativo (`login-admin.html`), acessível pelo ícone de engrenagem ⚙️ no dashboard.
-- **Senha padrão:** `1234`
-- Pode ser alterada em: **Painel Admin → Senha do Administrador**.
-
-> ⚠️ As senhas são armazenadas localmente no navegador (`localStorage`). Ao limpar os dados do navegador, voltam para o padrão `1234`.
 
 ---
 
